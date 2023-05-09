@@ -1,0 +1,15 @@
+#ifndef APP_BUILD_VERSION_H_IN
+#define APP_BUILD_VERSION_H_IN
+
+/* build info */
+#define BUILD_DATA      "@BUILD_DATA@"
+#define BUILD_TIME      "@BUILD_TIME@"
+#define BUILD_VERSION   @BUILD_VERSION@
+#define BUILD_BRANCH    "@BUILD_BRANCH@"
+
+/* version info */
+#define VERSION_MAJOR   "@VERSION_MAJOR@"
+#define VERSION_MINOR   "@VERSION_MINOR@"
+#define VERSION_REVISED "@VERSION_REVISED@"
+
+#endif //APP_BUILD_VERSION_H_IN
