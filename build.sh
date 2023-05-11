@@ -56,7 +56,7 @@ if [ $? -ne 0 ];then
 	exit -1
 fi
 
-cp -rf libremote_debug_server.so libremote_debug_server.so.$VERSION
+cp -rf libutils.so libutils.so.$VERSION
 cd -
 
 cd example/out
