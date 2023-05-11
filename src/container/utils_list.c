@@ -1,75 +1,70 @@
 #include "utils_list.h"
 
-void util_list_init(util_list_t* l) {
+void util_list_init(util_list_t* list) {
 
-	(l)->n = (l);
-	(l)->p = (l);
+	(list)->next = (list);
+	(list)->prev = (list);
 }
 
-void util_list_insert_head(util_list_t* l, util_list_node_t* x) {
+void util_list_insert_head(util_list_t* list, util_list_node_t* node) {
 
 	/**
 	 * init node;
 	 */
-	(x)->n     = (x);
-	(x)->p     = (x);
+	(node)->next     = (node);
+	(node)->prev     = (node);
 	/**
 	 * insert node;
 	 */
-	(x)->n     = (l)->n;
-	(x)->p->n  = (x);
-	(x)->p     = (l);
-	(l)->n     = (x);
+	(node)->next     = (list)->next; // n1 = list->next; node->next = n1
+	(node)->next->prev  = (node);    // n1 = list->next; n1->prev = node
+	(node)->prev     = (list);
+	(list)->next     = (node);
 }
 
-void util_list_insert_tail(util_list_t* l, util_list_node_t* x) {
+void util_list_insert_tail(util_list_t* list, util_list_node_t* node) {
 
 	/**
 	 * init node;
 	 */
-	(x)->n = (x);
-	(x)->p = (x);
+	(node)->next = (node);
+	(node)->prev = (node);
 	/**
 	 * insert node;
 	 */
-	(x)->p     = (l)->p;
-	(x)->p->n  = (x);
-	(x)->n     = (l);
-	(l)->p     = (x);
+	(node)->prev     = (list)->prev; // tail = list->prev; node->prev = tail
+	(node)->prev->next  = (node); 	 // tail = list->prev; tail->next = node
+	(node)->next     = (list);
+	(list)->prev     = (node);
 }
 
-bool util_list_empty(util_list_t* l) {
+bool util_list_empty(util_list_t* list) {
 
-	return (l) == (l)->p;
+	return (list) == (list)->prev;
 }
 
-util_list_node_t* util_list_head(util_list_t* l) {
+util_list_node_t* util_list_head(util_list_t* list) {
 
-	return (l)->n;
+	return (list)->next;
 }
 
-util_list_node_t* util_list_tail(util_list_t* l) {
+util_list_node_t* util_list_tail(util_list_t* list) {
 
-	return (l)->p;
+	return (list)->prev;
 }
 
-util_list_node_t* util_list_sentinel(util_list_t* l) {
+void util_list_remove(util_list_node_t* node) {
 
-	return (l);
+	(node)->next->prev   = (node)->prev;
+	(node)->prev->next   = (node)->next;
 }
 
-void util_list_remove(util_list_node_t* x) {
+util_list_node_t* util_list_next(util_list_node_t* node) {
 
-	(x)->n->p   = (x)->p;
-	(x)->p->n   = (x)->n;
+	return (node)->next;
 }
 
-util_list_node_t* util_list_next(util_list_node_t* x) {
+util_list_node_t* util_list_prev(util_list_node_t* node) {
 
-	return (x)->n;
-}
-
-util_list_node_t* util_list_prev(util_list_node_t* x) {
-
-	return (x)->p;
+	return (node)->prev;
 }
