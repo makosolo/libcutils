@@ -9,6 +9,7 @@
 // #include <glib.h>
 
 #include "test_list.c"
+#include "test_cycbuf.c"
 
 typedef struct
 {
@@ -43,6 +44,7 @@ int main(int argc, const char *argv[])
     memset(&g_test_ctx, 0, sizeof(test_context_t));
 
     test_list();
+    test_cycbuf();
 
     // while (!g_test_ctx.exit) {
     //     sleep(100);
