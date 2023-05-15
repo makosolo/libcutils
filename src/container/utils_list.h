@@ -1,5 +1,5 @@
-#ifndef H_UTIL_LIST_H
-#define H_UTIL_LIST_H
+#ifndef H_UTILS_LIST_H
+#define H_UTILSLIST_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -34,4 +34,4 @@ void              util_list_remove(util_list_node_t* node);
                     pos != (list); \
                     pos = p, p = pos->prev)
 
-#endif // H_UTIL_LIST_H
+#endif // H_UTILS_LIST_H
