@@ -34,4 +34,7 @@ int util_string_find_str_count(const char *str, const char *sample);
 int util_string_strcmp(const char *str1, const char *str2, uint32_t len);
 int util_string_strcmp_tail(const char *str1, const char *str2, uint32_t len);
 
+int util_string_upper(char *str);
+int util_string_lower(char *str);
+
 #endif // H_UTILS_STRING_H
