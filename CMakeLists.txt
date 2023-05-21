@@ -23,13 +23,17 @@ SET(CMAKE_CXX_COMPILER "g++")
 
 set(SRC_DIR
     src/container/utils_list.c
-    src/container/utils_cycbuf.c)
+    src/container/utils_cycbuf.c
+    src/utils/utils_string.c
+    )
 
 #头文件
 include_directories(
                     . 
                     src
-                    src/container)
+                    src/container
+                    src/utils
+                    )
 
 #宏定义
 add_definitions(-Wno-builtin-macro-redefined -g)

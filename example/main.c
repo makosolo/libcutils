@@ -10,6 +10,7 @@
 
 #include "test_list.c"
 #include "test_cycbuf.c"
+#include "test_string.c"
 
 typedef struct
 {
@@ -45,6 +46,7 @@ int main(int argc, const char *argv[])
 
     test_list();
     test_cycbuf();
+    test_string();
 
     // while (!g_test_ctx.exit) {
     //     sleep(100);

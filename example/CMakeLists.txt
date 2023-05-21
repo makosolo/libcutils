@@ -24,7 +24,10 @@ SET(CMAKE_CXX_COMPILER "g++")
 set(SRC_DIR main.c)
 
 #头文件
-include_directories(../src/container)
+include_directories(
+    ../src/container
+    ../src/utils
+    )
 
 #链接库
 link_directories(../out/)
