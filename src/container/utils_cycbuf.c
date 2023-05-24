@@ -1,59 +1,93 @@
+#include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "utils_cycbuf.h"
 
 static uint32_t cycbuf_size(util_cycbuf_t* cycbuf)
 {
-    return (cycbuf->w_pos >= cycbuf->r_pos? 
-           cycbuf->w_pos - cycbuf->r_pos: 
-           cycbuf->size - cycbuf->r_pos + cycbuf->w_pos);
+    uint32_t size = 0;
+
+    if (cycbuf->w_pos >= 0) {
+        size = (cycbuf->w_pos > cycbuf->r_pos? 
+                cycbuf->w_pos - cycbuf->r_pos: 
+                cycbuf->size - cycbuf->r_pos + cycbuf->w_pos);        
+    }
+
+    return size;
 }
 
-static uint32_t cycbuf_avail(util_cycbuf_t* cycbuf)
+static uint32_t cycbuf_remain(util_cycbuf_t* cycbuf)
 {
     return (cycbuf->size - cycbuf_size(cycbuf));
 }
 
-static uint32_t cycbuf_write(util_cycbuf_t* cycbuf, void* data, uint32_t len)
+static void cycbuf_write(util_cycbuf_t* cycbuf, void* data, uint32_t len)
 {
-    uint32_t l = len < (cycbuf->size - cycbuf->w_pos) ? len : (cycbuf->size - cycbuf->w_pos);
-    uint32_t pos = 0;
+    uint32_t writableLen = 0;
+    uint32_t overFlowLen = 0;
 
-    memcpy(cycbuf->buffer + cycbuf->w_pos, data, l);
-    if (len - l > 0) {
-        memcpy(cycbuf->buffer, (uint8_t*)data + l, len - l);
-        pos = len - l;
+    /* init pointer */
+    if (cycbuf->w_pos < 0 || cycbuf->r_pos < 0) {
+        cycbuf->w_pos = cycbuf->r_pos = 0;
+    }
+
+    writableLen = len < (cycbuf->size - cycbuf->w_pos) ? len : (cycbuf->size - cycbuf->w_pos);
+    overFlowLen = len - writableLen;
+
+    memcpy(cycbuf->buffer + cycbuf->w_pos, data, writableLen);
+
+    if (overFlowLen > 0) {
+        memcpy(cycbuf->buffer, (uint8_t*)data + writableLen, overFlowLen);
+        cycbuf->w_pos = overFlowLen;
     }
     else {
-        pos = cycbuf->r_pos + l;
+        cycbuf->w_pos += writableLen;
     }
     
-    return pos;
+    /* reset w_pos */
+    if (cycbuf->w_pos >= cycbuf->size) {
+        cycbuf->w_pos = 0;
+    }
 }
 
-static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
+static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool remove)
 {
-    uint32_t l = cycbuf->w_pos - cycbuf->r_pos;
-    uint32_t pos = 0;
+    uint32_t readableLen = 0;
+    uint32_t overFlowLen = 0;
 
-    if (len > l) {
-        len = l;
-    }
+    readableLen = len < (cycbuf->size - cycbuf->r_pos) ? len : (cycbuf->size - cycbuf->r_pos);
+    overFlowLen = len - readableLen;
 
-    l = len < (cycbuf->size - cycbuf->r_pos) ? len : (cycbuf->size - cycbuf->r_pos);
-
-    memcpy(buf, cycbuf->buffer + cycbuf->r_pos, l);
-    if (len - l > 0) {
-        memcpy(buf + l, cycbuf->buffer, len - l);
-        pos = len - l;
-    }
-    else {
-        pos = cycbuf->r_pos + l;
+    if (NULL != buf) {
+        memcpy(buf, cycbuf->buffer + cycbuf->r_pos, readableLen);
     }
     
-    return pos;
+    if (overFlowLen > 0) {
+        if (NULL != buf) {
+            memcpy(buf + readableLen, cycbuf->buffer, overFlowLen);
+        }
+
+        if (remove) {
+            cycbuf->r_pos = overFlowLen;
+        }
+    }
+    else if (remove) {
+        cycbuf->r_pos += readableLen;
+    }
+    
+    /* reset r_pos */
+    if (remove) {
+        if (cycbuf->r_pos >= cycbuf->size) {
+            cycbuf->r_pos = 0;
+        }
+
+        if (cycbuf->r_pos == cycbuf->w_pos) {
+            cycbuf->r_pos = cycbuf->w_pos = -1;
+        }        
+    }
 }
 
 int util_cycbuf_init(util_cycbuf_t* cycbuf, uint32_t max_size)
@@ -64,9 +98,8 @@ int util_cycbuf_init(util_cycbuf_t* cycbuf, uint32_t max_size)
 
     cycbuf->buffer  = (char *)malloc(max_size);
     cycbuf->size    = max_size;
-    cycbuf->r_pos   = 0;
-    cycbuf->w_pos   = 0;
-
+    cycbuf->r_pos   = -1;
+    cycbuf->w_pos   = -1;
     return (NULL != cycbuf->buffer)? 0: -1;
 }
 
@@ -76,7 +109,13 @@ void util_cycbuf_deinit(util_cycbuf_t* cycbuf)
         return;
     }
 
-    free(cycbuf->buffer);
+    char *tmp = cycbuf->buffer;
+    cycbuf->buffer  = NULL;
+    cycbuf->size    = 0;
+    cycbuf->r_pos   = -1;
+    cycbuf->w_pos   = -1;
+
+    free(tmp);
 }
 
 uint32_t util_cycbuf_size(util_cycbuf_t* cycbuf)
@@ -94,13 +133,15 @@ uint32_t util_cycbuf_push(util_cycbuf_t* cycbuf, void* data, uint32_t len)
         return 0;
     }
 
-    uint32_t avail = cycbuf_avail(cycbuf);
+    uint32_t remain = cycbuf_remain(cycbuf);
 
-    if (len > avail) {
-        len = avail;
+    if (len > remain) {
+        len = remain;
     }
 
-    cycbuf->w_pos = cycbuf_write(cycbuf, data, len);
+    if (len > 0) {
+        cycbuf_write(cycbuf, data, len);
+    }
 
     return len;
 }
@@ -111,13 +152,15 @@ uint32_t util_cycbuf_pop(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
         return 0;
     }
 
-    uint32_t l = cycbuf->w_pos - cycbuf->r_pos;
+    uint32_t size = cycbuf_size(cycbuf);
 
-    if (len > l) {
-        len = l;
+    if (len > size) {
+        len = size;
     }
 
-    cycbuf->r_pos = cycbuf_read(cycbuf, buf, len);
+    if (len > 0) {
+        cycbuf_read(cycbuf, buf, len, true);
+    }
 
     return len;
 }
@@ -128,13 +171,15 @@ uint32_t util_cycbuf_peek(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
         return 0;
     }
 
-    uint32_t l = cycbuf->w_pos - cycbuf->r_pos;
+    uint32_t size = cycbuf_size(cycbuf);
 
-    if (len > l) {
-        len = l;
+    if (len > size) {
+        len = size;
     }
 
-    cycbuf_read(cycbuf, buf, len);
+    if (len > 0) {
+        cycbuf_read(cycbuf, buf, len, false);
+    }
 
     return len;
 }
@@ -145,18 +190,28 @@ uint32_t util_cycbuf_lose(util_cycbuf_t* cycbuf, uint32_t len)
         return 0;
     }
 
-    uint32_t avail = cycbuf_avail(cycbuf);
+    uint32_t size = cycbuf_size(cycbuf);
 
-    if (len > avail) {
-        len = avail;
+    if (len > size) {
+        len = size;
     }
 
-    if (cycbuf->w_pos > cycbuf->r_pos) {
-        cycbuf->r_pos += len;
-    }
-    else {
-        cycbuf->r_pos += len - (cycbuf->size - cycbuf->r_pos);
+    if (len > 0) {
+        cycbuf_read(cycbuf, NULL, len, true);
     }
     
     return len;
+}
+
+void util_cycbuf_print(util_cycbuf_t* cycbuf)
+{
+    if (NULL == cycbuf || NULL == cycbuf->buffer) {
+        return;
+    }
+
+    printf("util_cycbuf_print: r_pos=%d w_pos=%d size=%d\n", cycbuf->r_pos, cycbuf->w_pos, util_cycbuf_size(cycbuf));
+    for (int i = 0; i < util_cycbuf_size(cycbuf); i++) {
+        printf("%c ", cycbuf->buffer[(cycbuf->r_pos+i)%cycbuf->size]);
+    }
+    printf("\n");
 }
