@@ -1,5 +1,5 @@
 #ifndef H_UTILS_LIST_H
-#define H_UTILSLIST_H
+#define H_UTILS_LIST_H
 
 #include <stddef.h>
 #include <stdbool.h>

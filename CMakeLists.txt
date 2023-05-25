@@ -23,6 +23,7 @@ SET(CMAKE_CXX_COMPILER "g++")
 
 set(SRC_DIR
     src/container/utils_list.c
+    src/container/utils_queue.c
     src/container/utils_cycbuf.c
     src/utils/utils_string.c
     )
