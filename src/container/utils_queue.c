@@ -12,7 +12,7 @@ struct util_queue_s {
 typedef struct {
     util_list_node_t    node;
     void               *data;                
-} util_queue_node_t;
+} util_queue_data_t;
 
 util_queue_t *util_queue_creat(size_t max_count)
 {
@@ -39,17 +39,17 @@ void util_queue_destroy(util_queue_t* queue)
 
 int util_queue_push(util_queue_t* queue, void* data)
 {
-    util_queue_node_t *q_node = NULL;
+    util_queue_data_t *q_data = NULL;
     
     if (NULL == queue || NULL == data || queue->push_count - queue->pop_count >= queue->max_count) {
         return -1;
     }
 
-    q_node = (util_queue_node_t*)malloc(sizeof(util_queue_node_t));
-    if (NULL != q_node) {
+    q_data = (util_queue_data_t*)malloc(sizeof(util_queue_data_t));
+    if (NULL != q_data) {
         queue->push_count++;
-        q_node->data = data;
-        util_list_insert_tail(&queue->list, &q_node->node);
+        q_data->data = data;
+        util_list_insert_tail(&queue->list, &q_data->node);
         return 0;
     }
     
@@ -66,7 +66,7 @@ void* util_queue_pop(util_queue_t* queue)
     if (NULL != node) {
         queue->pop_count++;
         util_list_remove(node);
-        return util_list_data(node, util_queue_node_t, node)->data;
+        return util_list_data(node, util_queue_data_t, node)->data;
     }
     
     return NULL;
@@ -80,7 +80,7 @@ void* util_queue_peek(util_queue_t* queue)
 
     util_list_node_t *node = util_list_tail(&queue->list);
     if (NULL != node) {
-        return util_list_data(node, util_queue_node_t, node)->data;
+        return util_list_data(node, util_queue_data_t, node)->data;
     }
     
     return NULL;
