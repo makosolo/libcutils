@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 struct util_list_node_s {
-	struct util_list_node_s* prev;
-	struct util_list_node_s* next;
+    struct util_list_node_s* prev;
+    struct util_list_node_s* next;
 };
 
 typedef struct  util_list_node_s util_list_t;

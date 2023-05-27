@@ -2,17 +2,39 @@
 
 #include "utils_queue.h"
 
+struct util_queue_s {
+    util_list_t     list;
+    size_t          max_count;
+    size_t          push_count;
+    size_t          pop_count;
+};
+
 typedef struct {
     util_list_node_t    node;
     void               *data;                
 } util_queue_node_t;
 
-void util_queue_init(util_queue_t* queue, size_t max_count)
+util_queue_t *util_queue_creat(size_t max_count)
 {
-    queue->max_count  = max_count;
-    queue->push_count = 0;
-    queue->pop_count  = 0;  
-    util_list_init(&queue->list);
+    util_queue_t *queue = (util_queue_t*)malloc(sizeof(util_queue_t));
+    if (NULL != queue) {
+        queue->max_count  = max_count;
+        queue->push_count = 0;
+        queue->pop_count  = 0;  
+        util_list_init(&queue->list);
+    }
+
+    return queue;
+}
+
+void util_queue_destroy(util_queue_t* queue)
+{
+    util_queue_t *temp = queue;
+    queue = NULL;
+
+    if (NULL != temp) {
+        free(temp);
+    }
 }
 
 int util_queue_push(util_queue_t* queue, void* data)

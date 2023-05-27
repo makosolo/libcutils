@@ -6,6 +6,13 @@
 
 #include "utils_cycbuf.h"
 
+struct util_cycbuf_s {
+    uint8_t* buffer;  /* buffer pointer */
+    int      size;    /* buffer size */
+    int      w_pos;   /* write pos */
+    int      r_pos;   /* read pos */
+};
+
 static uint32_t cycbuf_size(util_cycbuf_t* cycbuf)
 {
     uint32_t size = 0;
@@ -90,32 +97,28 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
     }
 }
 
-int util_cycbuf_init(util_cycbuf_t* cycbuf, uint32_t max_size)
+util_cycbuf_t *util_cycbuf_create(uint32_t max_size)
 {
-    if (NULL == cycbuf) {
-        return -1;
+    util_cycbuf_t *cycbuf = NULL;
+
+    cycbuf = (util_cycbuf_t*)malloc(sizeof(util_cycbuf_t) + max_size);
+    if (NULL != cycbuf) {
+        cycbuf->buffer  = (uint8_t*)cycbuf + sizeof(util_cycbuf_t);
+        cycbuf->size    = max_size;
+        cycbuf->r_pos   = -1;
+        cycbuf->w_pos   = -1;
     }
 
-    cycbuf->buffer  = (char *)malloc(max_size);
-    cycbuf->size    = max_size;
-    cycbuf->r_pos   = -1;
-    cycbuf->w_pos   = -1;
-    return (NULL != cycbuf->buffer)? 0: -1;
+    return (util_cycbuf_t*)cycbuf;
 }
 
-void util_cycbuf_deinit(util_cycbuf_t* cycbuf)
+void util_cycbuf_destroy(util_cycbuf_t* cycbuf)
 {
-    if (NULL == cycbuf || NULL == cycbuf->buffer) {
-        return;
+    util_cycbuf_t *tmp = cycbuf;
+
+    if (NULL != tmp) {
+        free(tmp);
     }
-
-    char *tmp = cycbuf->buffer;
-    cycbuf->buffer  = NULL;
-    cycbuf->size    = 0;
-    cycbuf->r_pos   = -1;
-    cycbuf->w_pos   = -1;
-
-    free(tmp);
 }
 
 uint32_t util_cycbuf_size(util_cycbuf_t* cycbuf)
