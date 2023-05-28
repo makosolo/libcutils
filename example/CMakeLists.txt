@@ -26,6 +26,7 @@ set(SRC_DIR main.c)
 #头文件
 include_directories(
     ../src/container
+    ../src/string
     ../src/utils
     )
 

@@ -26,7 +26,7 @@ set(SRC_DIR
     src/container/utils_queue.c
     src/container/utils_cycbuf.c
     src/container/utils_rbtree.c
-    src/utils/utils_string.c
+    src/string/utils_string.c
     )
 
 #头文件
@@ -34,6 +34,7 @@ include_directories(
                     . 
                     src
                     src/container
+                    src/string
                     src/utils
                     )
 
