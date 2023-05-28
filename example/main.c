@@ -12,6 +12,7 @@
 #include "test_queue.c"
 #include "test_cycbuf.c"
 #include "test_string.c"
+#include "test_rbtree.c"
 
 typedef struct
 {
@@ -49,6 +50,7 @@ int main(int argc, const char *argv[])
     test_cycbuf();
     test_string();
     test_queue();
+    test_rbtree();
 
     // while (!g_test_ctx.exit) {
     //     sleep(100);
