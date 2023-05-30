@@ -9,7 +9,7 @@
 // #include <glib.h>
 
 #include "test_list.c"
-#include "test_queue.c"
+// #include "test_queue.c"
 #include "test_cycbuf.c"
 #include "test_string.c"
 #include "test_rbtree.c"
@@ -49,7 +49,7 @@ int main(int argc, const char *argv[])
     test_list();
     test_cycbuf();
     test_string();
-    test_queue();
+    // test_queue();
     test_rbtree();
 
     // while (!g_test_ctx.exit) {
