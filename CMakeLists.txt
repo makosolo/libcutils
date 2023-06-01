@@ -27,15 +27,19 @@ set(SRC_DIR
     src/container/utils_cycbuf.c
     src/container/utils_rbtree.c
     src/string/utils_string.c
+    src/platform/utils_timer.c
+    src/platform/utils_task.c
+    src/utils/utils_counter.c
     )
 
 #头文件
 include_directories(
-                    . 
+                    .
                     src
                     src/container
                     src/string
                     src/utils
+                    src/platform/include
                     )
 
 #宏定义
@@ -49,5 +53,9 @@ endif()
 
 #源文件
 add_library(utils SHARED ${SRC_DIR})
+
+target_link_libraries(utils
+    pthread
+)
 
 add_compile_options(-fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -frtti -fexceptions)

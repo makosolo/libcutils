@@ -28,6 +28,7 @@ include_directories(
     ../src/container
     ../src/string
     ../src/utils
+    ../src/platform/include
     )
 
 #链接库
