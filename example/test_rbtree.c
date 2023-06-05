@@ -7,8 +7,7 @@ void test_rbtree(void)
 
     util_rbtree_t *tree = NULL;
 
-    tree = util_rbtree_create(UTIL_RBTREE_KEY_TYPE_I8);
-    if (NULL == tree) {
+    if (0 == util_rbtree_create(&tree, UTIL_RBTREE_KEY_TYPE_I8)) {
         return;
     }
 
@@ -40,7 +39,7 @@ void test_rbtree(void)
             else {
                 printf("util_rbtree_get_key fail\n");
             }
-            
+
             node = util_rbtree_next(node);
         }
 
@@ -53,7 +52,7 @@ void test_rbtree(void)
             else {
                 printf("util_rbtree_get_key fail\n");
             }
-            
+
             node = util_rbtree_prev(node);
         }
 
@@ -70,7 +69,7 @@ void test_rbtree(void)
             node = util_rbtree_first(tree);
         }
 
-        printf("---util_rbtree_insert: is_empty=%d\n", util_rbtree_empty(tree));    
+        printf("---util_rbtree_insert: is_empty=%d\n", util_rbtree_empty(tree));
     }
 
     {
@@ -100,7 +99,7 @@ void test_rbtree(void)
             else {
                 printf("util_rbtree_get_key fail\n");
             }
-            
+
             node = util_rbtree_next(node);
         }
 
@@ -113,7 +112,7 @@ void test_rbtree(void)
             else {
                 printf("util_rbtree_get_key fail\n");
             }
-            
+
             node = util_rbtree_prev(node);
         }
 
@@ -130,9 +129,9 @@ void test_rbtree(void)
             node = util_rbtree_first(tree);
         }
 
-        printf("---util_rbtree_insert: is_empty=%d\n", util_rbtree_empty(tree));    
+        printf("---util_rbtree_insert: is_empty=%d\n", util_rbtree_empty(tree));
     }
 
 
-    util_rbtree_destroy(tree);
+    util_rbtree_delete(&tree);
 }

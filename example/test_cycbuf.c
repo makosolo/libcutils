@@ -6,16 +6,14 @@ void test_cycbuf(void)
 {
     util_cycbuf_t *cycbuf = NULL;
 
-    cycbuf = util_cycbuf_create(32);
-
-    if (NULL == cycbuf) {
+    if (0 == util_cycbuf_create(&cycbuf, 32)) {
         printf("util_cycbuf_create fail\n");
         return;
     }
 
     printf("++++++++++++++++++++++++util_cycbuf_push++++++++++++++++++++++++\n");
     for (int i = 0; i < 10; i++)
-    {   
+    {
         uint32_t len = util_cycbuf_push(cycbuf, buf[i], 5);
         printf("util_cycbuf_push=%d %d\n", len, util_cycbuf_size(cycbuf));
         util_cycbuf_print(cycbuf);
@@ -41,7 +39,7 @@ void test_cycbuf(void)
 
     printf("++++++++++++++++++++++++util_cycbuf_pop++++++++++++++++++++++++\n");
     for (int i = 0; i < 10; i++)
-    {   
+    {
         uint32_t len = util_cycbuf_push(cycbuf, buf[i], 5);
         printf("util_cycbuf_push=%d %d\n", len, util_cycbuf_size(cycbuf));
         util_cycbuf_print(cycbuf);
@@ -56,7 +54,7 @@ void test_cycbuf(void)
 
     printf("++++++++++++++++++++++++util_cycbuf_lose++++++++++++++++++++++++\n");
     for (int i = 0; i < 10; i++)
-    {   
+    {
         uint32_t len = util_cycbuf_push(cycbuf, buf[i], 5);
         printf("util_cycbuf_push=%d %d\n", len, util_cycbuf_size(cycbuf));
         util_cycbuf_print(cycbuf);
@@ -68,5 +66,5 @@ void test_cycbuf(void)
         }
     }
 
-    util_cycbuf_destroy(cycbuf);
+    util_cycbuf_delete(&cycbuf);
 }

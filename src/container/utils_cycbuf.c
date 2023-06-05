@@ -18,9 +18,9 @@ static uint32_t cycbuf_size(util_cycbuf_t* cycbuf)
     uint32_t size = 0;
 
     if (cycbuf->w_pos >= 0) {
-        size = (cycbuf->w_pos > cycbuf->r_pos? 
-                cycbuf->w_pos - cycbuf->r_pos: 
-                cycbuf->size - cycbuf->r_pos + cycbuf->w_pos);        
+        size = (cycbuf->w_pos > cycbuf->r_pos?
+                cycbuf->w_pos - cycbuf->r_pos:
+                cycbuf->size - cycbuf->r_pos + cycbuf->w_pos);
     }
 
     return size;
@@ -53,7 +53,7 @@ static void cycbuf_write(util_cycbuf_t* cycbuf, void* data, uint32_t len)
     else {
         cycbuf->w_pos += writableLen;
     }
-    
+
     /* reset w_pos */
     if (cycbuf->w_pos >= cycbuf->size) {
         cycbuf->w_pos = 0;
@@ -71,7 +71,7 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
     if (NULL != buf) {
         memcpy(buf, cycbuf->buffer + cycbuf->r_pos, readableLen);
     }
-    
+
     if (overFlowLen > 0) {
         if (NULL != buf) {
             memcpy(buf + readableLen, cycbuf->buffer, overFlowLen);
@@ -84,7 +84,7 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
     else if (remove) {
         cycbuf->r_pos += readableLen;
     }
-    
+
     /* reset r_pos */
     if (remove) {
         if (cycbuf->r_pos >= cycbuf->size) {
@@ -93,47 +93,64 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
 
         if (cycbuf->r_pos == cycbuf->w_pos) {
             cycbuf->r_pos = cycbuf->w_pos = -1;
-        }        
+        }
     }
 }
 
-util_cycbuf_t *util_cycbuf_create(uint32_t max_size)
+int util_cycbuf_create(util_cycbuf_t** cycbuf, uint32_t max_size)
 {
-    util_cycbuf_t *cycbuf = NULL;
+    util_cycbuf_t *temp_cycbuf = NULL;
+    int status = 0;
 
-    cycbuf = (util_cycbuf_t*)malloc(sizeof(util_cycbuf_t) + max_size);
-    if (NULL != cycbuf) {
-        cycbuf->buffer  = (uint8_t*)cycbuf + sizeof(util_cycbuf_t);
-        cycbuf->size    = max_size;
-        cycbuf->r_pos   = -1;
-        cycbuf->w_pos   = -1;
+    if (NULL == cycbuf || 0 == max_size) {
+        return -1;
     }
 
-    return (util_cycbuf_t*)cycbuf;
+    temp_cycbuf = (util_cycbuf_t*)malloc(sizeof(util_cycbuf_t) + max_size);
+    if (NULL != temp_cycbuf) {
+        temp_cycbuf->buffer  = (uint8_t*)cycbuf + sizeof(util_cycbuf_t);
+        temp_cycbuf->size    = max_size;
+        temp_cycbuf->r_pos   = -1;
+        temp_cycbuf->w_pos   = -1;
+        *cycbuf = temp_cycbuf;
+    }
+    else {
+        status  = -1;
+        *cycbuf = NULL;
+    }
+
+    return status;
 }
 
-void util_cycbuf_destroy(util_cycbuf_t* cycbuf)
+int util_cycbuf_delete(util_cycbuf_t** cycbuf)
 {
-    util_cycbuf_t *tmp = cycbuf;
+    util_cycbuf_t *temp_cycbuf = NULL;
 
-    if (NULL != tmp) {
-        free(tmp);
+    if (NULL == cycbuf || NULL == *cycbuf) {
+        return -1;
     }
+
+    temp_cycbuf = *cycbuf;
+    *cycbuf = NULL;
+
+    free(temp_cycbuf);
+
+    return 0;
 }
 
-uint32_t util_cycbuf_size(util_cycbuf_t* cycbuf)
+int util_cycbuf_size(util_cycbuf_t* cycbuf)
 {
     if (NULL == cycbuf) {
-        return 0;
+        return -1;
     }
 
     return cycbuf_size(cycbuf);
 }
 
-uint32_t util_cycbuf_push(util_cycbuf_t* cycbuf, void* data, uint32_t len)
+int util_cycbuf_push(util_cycbuf_t* cycbuf, void* data, uint32_t len)
 {
     if (NULL == cycbuf || NULL == cycbuf->buffer || NULL == data) {
-        return 0;
+        return -1;
     }
 
     uint32_t remain = cycbuf_remain(cycbuf);
@@ -149,10 +166,10 @@ uint32_t util_cycbuf_push(util_cycbuf_t* cycbuf, void* data, uint32_t len)
     return len;
 }
 
-uint32_t util_cycbuf_pop(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
+int util_cycbuf_pop(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
 {
     if (NULL == cycbuf || NULL == cycbuf->buffer || NULL == buf) {
-        return 0;
+        return -1;
     }
 
     uint32_t size = cycbuf_size(cycbuf);
@@ -168,10 +185,10 @@ uint32_t util_cycbuf_pop(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
     return len;
 }
 
-uint32_t util_cycbuf_peek(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
+int util_cycbuf_peek(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
 {
     if (NULL == cycbuf || NULL == cycbuf->buffer || NULL == buf) {
-        return 0;
+        return -1;
     }
 
     uint32_t size = cycbuf_size(cycbuf);
@@ -187,10 +204,10 @@ uint32_t util_cycbuf_peek(util_cycbuf_t* cycbuf, void* buf, uint32_t len)
     return len;
 }
 
-uint32_t util_cycbuf_lose(util_cycbuf_t* cycbuf, uint32_t len)
+int util_cycbuf_lose(util_cycbuf_t* cycbuf, uint32_t len)
 {
     if (NULL == cycbuf || NULL == cycbuf->buffer) {
-        return 0;
+        return -1;
     }
 
     uint32_t size = cycbuf_size(cycbuf);
@@ -202,7 +219,7 @@ uint32_t util_cycbuf_lose(util_cycbuf_t* cycbuf, uint32_t len)
     if (len > 0) {
         cycbuf_read(cycbuf, NULL, len, true);
     }
-    
+
     return len;
 }
 

@@ -77,19 +77,21 @@ void test_counter(void)
     strncpy(params.task_name, "VCounterTask", UTIL_MAX_TASK_NAME);
     params.task_name[UTIL_MAX_TASK_NAME-1U] = (char)0;
 
-    g_counter_ctx.counter_task.task = util_task_create(&params);
+    int status = util_task_create(&g_counter_ctx.counter_task.task, &params);
+    if (0 == status) {
+        g_counter_ctx.counter_task.stop_done = 0;
+        g_counter_ctx.counter_task.stop      = 0;
+        g_counter_ctx.counter                = counter;
 
-    g_counter_ctx.counter_task.stop_done = 0;
-    g_counter_ctx.counter_task.stop      = 0;
-    g_counter_ctx.counter                = counter;
+        if (NULL != g_counter_ctx.counter_task.task) {
+            while (!g_counter_ctx.counter_task.stop_done) {
+                util_task_wait_msecs(100);
+            }
 
-    if (NULL != g_counter_ctx.counter_task.task) {
-        while (!g_counter_ctx.counter_task.stop_done) {
-            util_task_wait_msecs(100);
+            util_task_delete(&g_counter_ctx.counter_task.task);
         }
-
-        util_task_destroy(g_counter_ctx.counter_task.task);
     }
+
 
     util_counter_destroy(counter);
 }

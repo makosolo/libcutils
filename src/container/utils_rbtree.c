@@ -25,7 +25,7 @@ struct util_rbtree_s
 
 typedef struct {
     util_rbtree_node_t  node;
-    void*               data;                
+    void*               data;
 } util_rbtree_data_t;
 
 static int keycmp_i8(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
@@ -420,79 +420,91 @@ util_rbtree_key_t util_rbtree_key_ptr(void *ptr)
     return key;
 }
 
-util_rbtree_t* util_rbtree_create(util_rbtree_key_type_t type)
+int util_rbtree_create(util_rbtree_t** tree, util_rbtree_key_type_t type)
 {
-    util_rbtree_t *tree = NULL;
+    util_rbtree_t *temp_tree = NULL;
+	int status = 0;
 
-    tree = (util_rbtree_t*)malloc(sizeof(util_rbtree_t));
-    if (NULL != tree) {
-        tree->rb_root = NULL;
+	if (NULL == tree) {
+		*tree = NULL;
+		return -1;
+	}
+
+    temp_tree = (util_rbtree_t*)malloc(sizeof(util_rbtree_t));
+    if (NULL != temp_tree) {
+        temp_tree->rb_root = NULL;
 
         switch (type) {
         case UTIL_RBTREE_KEY_TYPE_STR:
-            tree->rb_keycmp = keycmp_str;
+            temp_tree->rb_keycmp = keycmp_str;
             break;
 
         case UTIL_RBTREE_KEY_TYPE_I8:
-            tree->rb_keycmp = keycmp_i8;
+            temp_tree->rb_keycmp = keycmp_i8;
             break;
 
         case UTIL_RBTREE_KEY_TYPE_I16:
-            tree->rb_keycmp = keycmp_i16;
+            temp_tree->rb_keycmp = keycmp_i16;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_I32:
-            tree->rb_keycmp = keycmp_i32;
+            temp_tree->rb_keycmp = keycmp_i32;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_I64:
-            tree->rb_keycmp = keycmp_i64;
+            temp_tree->rb_keycmp = keycmp_i64;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_U8:
-            tree->rb_keycmp = keycmp_u8;
+            temp_tree->rb_keycmp = keycmp_u8;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_U16:
-            tree->rb_keycmp = keycmp_u16;
+            temp_tree->rb_keycmp = keycmp_u16;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_U32:
-            tree->rb_keycmp = keycmp_u32;
+            temp_tree->rb_keycmp = keycmp_u32;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_U64:
-            tree->rb_keycmp = keycmp_u64;
+            temp_tree->rb_keycmp = keycmp_u64;
             break;
-        
+
         case UTIL_RBTREE_KEY_TYPE_PTR:
-            tree->rb_keycmp = keycmp_ptr;
+            temp_tree->rb_keycmp = keycmp_ptr;
             break;
 
         default:
-            tree->rb_keycmp = NULL;
+            temp_tree->rb_keycmp = NULL;
+			status = -1;
+			free(temp_tree);
             break;
         }
     }
 
-    return tree;
+	*tree = (0 == status)? temp_tree: NULL;
+
+    return status;
 }
 
-void util_rbtree_destroy(util_rbtree_t* tree)
+int util_rbtree_delete(util_rbtree_t** tree)
 {
-	if (NULL == tree) {
-		return;
+	if (NULL == tree || NULL == *tree) {
+		return -1;
 	}
 
-	util_rbtree_node_t *node = util_rbtree_first(tree);
+	util_rbtree_node_t *node = util_rbtree_first(*tree);
 	while (NULL != node) {
-		util_rbtree_erase(tree, node);
-		node = util_rbtree_first(tree);
+		util_rbtree_erase(*tree, node);
+		node = util_rbtree_first(*tree);
 	}
 
-	util_rbtree_t *temp = tree;
-	tree = NULL;
+	util_rbtree_t *temp = *tree;
+	*tree = NULL;
 	free(temp);
+
+	return 0;
 }
 
 void util_rbtree_erase(util_rbtree_t* tree, util_rbtree_node_t* node)
@@ -612,7 +624,7 @@ int util_rbtree_insert(util_rbtree_t* tree, util_rbtree_key_t key, void *data)
             }
         }
         __rbtree_link_node(&t_node->node, parent, p);
-        __rbtree_insert_color(tree, &t_node->node);        
+        __rbtree_insert_color(tree, &t_node->node);
     }
 
 	return 0;
@@ -770,31 +782,31 @@ int util_rbtree_get_key(util_rbtree_node_t* node, util_rbtree_key_type_t type, v
 	case UTIL_RBTREE_KEY_TYPE_I16:
 		*(int16_t*)buf = node->rb_key.i16;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_I32:
 		*(int32_t*)buf = node->rb_key.i32;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_I64:
 		*(int64_t*)buf = node->rb_key.i64;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_U8:
 		*(uint8_t*)buf = node->rb_key.u8;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_U16:
 		*(uint16_t*)buf = node->rb_key.u16;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_U32:
 		*(uint32_t*)buf = node->rb_key.u32;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_U64:
 		*(uint64_t*)buf = node->rb_key.u64;
 		break;
-	
+
 	case UTIL_RBTREE_KEY_TYPE_PTR:
 		buf = node->rb_key.ptr;
 		break;
@@ -802,6 +814,6 @@ int util_rbtree_get_key(util_rbtree_node_t* node, util_rbtree_key_type_t type, v
 	default:
 		break;
 	}
-	
+
 	return 0;
 }

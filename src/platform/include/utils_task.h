@@ -89,7 +89,7 @@ typedef struct util_task_s util_task_t;
  * \return VX_SUCCESS on success
  *
  */
-util_task_t* util_task_create(const util_task_create_params_t *params);
+int util_task_create(util_task_t **task, const util_task_create_params_t *params);
 
 /*!
  * \brief Delete a task
@@ -99,7 +99,7 @@ util_task_t* util_task_create(const util_task_create_params_t *params);
  * \return VX_SUCCESS on success
  *
  */
-int util_task_destroy(util_task_t *task);
+int util_task_delete(util_task_t **task);
 
 /*!
  * \brief waits/sleeps for given milliseconds

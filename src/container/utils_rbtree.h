@@ -51,8 +51,8 @@ util_rbtree_key_t   util_rbtree_key_u32(uint32_t u32);
 util_rbtree_key_t   util_rbtree_key_u64(uint64_t u64);
 util_rbtree_key_t   util_rbtree_key_ptr(void *ptr);
 
-util_rbtree_t*      util_rbtree_create(util_rbtree_key_type_t type);
-void                util_rbtree_destroy(util_rbtree_t* tree);
+int                 util_rbtree_create(util_rbtree_t** tree, util_rbtree_key_type_t type);
+int                 util_rbtree_delete(util_rbtree_t** tree);
 void                util_rbtree_erase(util_rbtree_t* tree, util_rbtree_node_t* node);
 int                 util_rbtree_insert(util_rbtree_t* tree, util_rbtree_key_t key, void *data);
 util_rbtree_node_t* util_rbtree_find(util_rbtree_t* tree, util_rbtree_key_t key);

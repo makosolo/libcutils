@@ -19,8 +19,7 @@ extern int usleep (useconds_t __useconds);
 #define PRI_MAX  sched_get_priority_max(SCHED_FIFO)
 #define PRI_MIN  sched_get_priority_min(SCHED_FIFO)
 
-struct util_task_s
-{
+struct util_task_s {
     /*! \brief Handle to the task created
      */
     void *tsk_handle;
@@ -57,10 +56,8 @@ struct util_task_s
     char  task_name[UTIL_MAX_TASK_NAME];
 };
 
-typedef struct task_context_s
-{
+typedef struct task_context_s {
     pthread_t hndl;
-
 } task_context_t;
 
 static void *task_main(void *arg)
@@ -74,85 +71,89 @@ static void *task_main(void *arg)
     return NULL;
 }
 
-util_task_t* util_task_create(const util_task_create_params_t *params)
+int util_task_create(util_task_t **task, const util_task_create_params_t *params)
 {
     int status = 0;
 
-    if (NULL == params) {
-        return NULL;
+    if (NULL == task || NULL == params) {
+        return -1;
     }
 
-    util_task_t *task = NULL;
+    util_task_t *temp_task = NULL;
     task_context_t* context = NULL;
 
-    task = (util_task_t*)malloc(sizeof(util_task_t));
-    if (NULL == task) {
-        return NULL;
+    temp_task = (util_task_t*)malloc(sizeof(util_task_t));
+    if (NULL == temp_task) {
+        *task = NULL;
+        return -1;
     }
 
-    task->tsk_handle = NULL;
+    temp_task->tsk_handle = NULL;
 
     context = malloc(sizeof(task_context_t));
     if(context == NULL) {
-        free(task);
-        task = NULL;
+        free(temp_task);
+        *task = NULL;
         printf("Context memory allocation failed\n");
     }
     else {
         pthread_attr_t thread_attr;
 
-        task->stack_ptr     = params->stack_ptr;
-        task->stack_size    = params->stack_size;
-        task->core_affinity = params->core_affinity;
-        task->priority      = params->priority;
-        task->task_func     = params->task_main;
-        task->app_var       = params->app_var;
+        temp_task->stack_ptr     = params->stack_ptr;
+        temp_task->stack_size    = params->stack_size;
+        temp_task->core_affinity = params->core_affinity;
+        temp_task->priority      = params->priority;
+        temp_task->task_func     = params->task_main;
+        temp_task->app_var       = params->app_var;
 
         status = pthread_attr_init(&thread_attr);
         if(status == 0) {
-            status = pthread_create(&context->hndl, &thread_attr, task_main, task);
+            status = pthread_create(&context->hndl, &thread_attr, task_main, temp_task);
             pthread_attr_destroy(&thread_attr);
         }
 
         if (status == 0) {
-            task->tsk_handle = (void *)context;
+            temp_task->tsk_handle = (void *)context;
+            *task = temp_task;
         }
         else {
-            free(context);
-            free(task);
+            status = -1;
 
-            task    = NULL;
+            free(context);
+            free(temp_task);
+
+            *task   = NULL;
             context = NULL;
         }
     }
 
-    return task;
+    return status;
 }
 
-int util_task_destroy(util_task_t *task)
+int util_task_delete(util_task_t **task)
 {
     int status = 0;
 
-    if (NULL == task) {
+    if (NULL == task || NULL == *task) {
         return -1;
     }
 
-    util_task_t *temp = task;
+    util_task_t *temp_task = *task;
 
-    task = NULL;
-    if (temp->tsk_handle) {
+    *task = NULL;
+    if (temp_task->tsk_handle) {
         task_context_t* context;
         void *ret_val;
 
-        context = (task_context_t*)temp->tsk_handle;
-        temp->tsk_handle = NULL;
+        context = (task_context_t*)temp_task->tsk_handle;
+        temp_task->tsk_handle = NULL;
 
         pthread_cancel(context->hndl);
         pthread_join(context->hndl, &ret_val);
 
         free(context);
     }
-    free(temp);
+    free(temp_task);
 
     return 0;
 }
