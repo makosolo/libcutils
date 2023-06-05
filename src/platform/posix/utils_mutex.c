@@ -4,7 +4,7 @@
 
 #include "utils_mutex.h"
 
-struct tivx_mutex_s {
+struct util_mutex_s {
   pthread_mutex_t lock;
 };
 
