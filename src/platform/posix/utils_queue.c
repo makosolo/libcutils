@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/time.h>
 #include <pthread.h>
 
 #include "utils_event.h"
@@ -53,13 +55,13 @@ typedef struct util_queue_context_s {
     pthread_cond_t  condPut;
 } util_queue_context_t;
 
-int util_queue_create(util_queue_t **queue, uint32_t max_elements, uintptr_t *queue_memory, uint32_t flags)
+int util_queue_create(util_queue_t **queue, uint32_t max_elements, uint32_t flags)
 {
     int status = 0;
     util_queue_context_t *context = NULL;
     util_queue_t *tmp_queue = NULL;
 
-    if (NULL == queue || NULL == queue_memory || 0U == max_elements) {
+    if (NULL == queue || 0U == max_elements) {
         return -1;
     }
 
@@ -80,13 +82,21 @@ int util_queue_create(util_queue_t **queue, uint32_t max_elements, uintptr_t *qu
      */
     tmp_queue->max_ele  = max_elements;
     tmp_queue->flags    = flags;
-    tmp_queue->queue    = queue_memory;
+    tmp_queue->queue    = malloc(sizeof(uintptr_t) * max_elements);
     tmp_queue->context  = malloc(sizeof(util_queue_context_t));
     context = tmp_queue->context;
 
-    if(NULL == tmp_queue->context) {
+    if(NULL == tmp_queue->context || NULL == tmp_queue->queue) {
         printf("queue memory allocation failed\n");
+
+        if (NULL != tmp_queue->queue)
+            free(tmp_queue->queue);
+
+        if (NULL != tmp_queue->context)
+            free(tmp_queue->context);
+
         free(tmp_queue);
+
         status = -1;
     }
     else {
@@ -176,7 +186,7 @@ int util_queue_delete(util_queue_t **queue)
     free(context);
     free(tmp_queue);
 
-    return 0;
+    return status;
 }
 
 int util_queue_put(util_queue_t *queue, uintptr_t data, uint32_t timeout)
@@ -221,17 +231,75 @@ int util_queue_put(util_queue_t *queue, uintptr_t data, uint32_t timeout)
             do_break = true;
         }
         else {
+            int32_t retVal;
+
             /* que is full */
             if (timeout == UTIL_EVENT_TIMEOUT_NO_WAIT) {
                 printf("queue is full\n");
-                status = -1;
+                status   = -1;
                 do_break = true; /* non-blocking, so exit with error */
             }
             else if (queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_PUT) {
-                /* blocking on que put enabled */
-                queue->blockedOnPut = true;
-                pthread_cond_wait(&context->condPut, &context->lock);
-                queue->blockedOnPut = false;
+                if (UTIL_QUEUE_TIMEOUT_WAIT_FOREVER == timeout) {
+                    /* blocking on que put enabled */
+                    queue->blockedOnPut = true;
+                    retVal = pthread_cond_wait(&context->condPut, &context->lock);
+                    queue->blockedOnPut = false;
+
+                    if (retVal) {
+                        status   = -1;
+                        do_break = true;
+                        printf("Event wait failed.\n");
+                    }
+                }
+                else {
+                    /* A valid and finite timeout has been specified. */
+                    struct timespec ts;
+                    struct timeval  tv;
+
+                    retVal = gettimeofday(&tv, NULL);
+
+                    if (retVal == 0) {
+                        uint32_t        sec;
+                        unsigned long   micro;
+
+                        /* timeout is expected to be in milli-sec. */
+                        micro = tv.tv_usec + (timeout * 1000);
+                        sec   = tv.tv_sec;
+
+                        if (micro >= 1000000LLU) {
+                            sec   += micro/1000000LLU;
+                            micro %= 1000000LLU;
+                        }
+
+                        ts.tv_nsec = micro * 1000;
+                        ts.tv_sec  = sec;
+
+                        queue->blockedOnPut = true;
+                        retVal = pthread_cond_timedwait(&context->condPut,
+                                                        &context->lock,
+                                                        &ts);
+                        queue->blockedOnPut = false;
+
+                        if (retVal == ETIMEDOUT) {
+                            printf("Event timed-out.\n");
+                            status   = -1;
+                            do_break = true;
+                        }
+                        else if (retVal) {
+                            /* Error other than ETIMEDOUT. */
+                            printf("Event wait failed.\n");
+                            status   = -1;
+                            do_break = true;
+                        }
+                    }
+                    else {
+                        /* gettimeofday() failed. */
+                        printf("gettimeofday() failed.\n");
+                        status   = -1;
+                        do_break = true;
+                    }
+                }
             }
             else {
                 /* blocking on que put disabled */
@@ -293,18 +361,76 @@ int util_queue_pop(util_queue_t *queue, uintptr_t *data, uint32_t timeout)
             do_break = true;
         }
         else {
+            int32_t retVal;
+
             /* no elements or not enough element in que to extract */
             if (timeout == UTIL_EVENT_TIMEOUT_NO_WAIT) {
                 status   = -1;
                 do_break = true; /* non-blocking, exit with error */
             }
             else if (queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET) {
-                /* blocking on que get enabled */
+                if (UTIL_QUEUE_TIMEOUT_WAIT_FOREVER == timeout) {
+                    /* blocking on que get enabled */
 
-                queue->blockedOnGet = true;
-                pthread_cond_wait(&context->condGet, &context->lock);
-                queue->blockedOnGet = false;
-                /* received semaphore, check que again */
+                    queue->blockedOnGet = true;
+                    retVal = pthread_cond_wait(&context->condGet, &context->lock);
+                    queue->blockedOnGet = false;
+                    /* received semaphore, check que again */
+
+                    if (retVal) {
+                        status   = -1;
+                        do_break = true;
+                        printf("Event wait failed.\n");
+                    }
+                }
+                else {
+                    /* A valid and finite timeout has been specified. */
+                    struct timespec ts;
+                    struct timeval  tv;
+
+                    retVal = gettimeofday(&tv, NULL);
+
+                    if (retVal == 0) {
+                        uint32_t        sec;
+                        unsigned long   micro;
+
+                        /* timeout is expected to be in milli-sec. */
+                        micro = tv.tv_usec + (timeout * 1000);
+                        sec   = tv.tv_sec;
+
+                        if (micro >= 1000000LLU) {
+                            sec   += micro/1000000LLU;
+                            micro %= 1000000LLU;
+                        }
+
+                        ts.tv_nsec = micro * 1000;
+                        ts.tv_sec  = sec;
+
+                        queue->blockedOnGet = true;
+                        retVal = pthread_cond_timedwait(&context->condGet,
+                                                        &context->lock,
+                                                        &ts);
+                        queue->blockedOnGet = false;
+
+                        if (retVal == ETIMEDOUT) {
+                            // printf("Event timed-out.\n");
+                            status   = -1;
+                            do_break = true;
+                        }
+                        else if (retVal) {
+                            /* Error other than ETIMEDOUT. */
+                            printf("Event wait failed.\n");
+                            status   = -1;
+                            do_break = true;
+                        }
+                    }
+                    else {
+                        /* gettimeofday() failed. */
+                        printf("gettimeofday() failed.\n");
+                        status   = -1;
+                        do_break = true;
+                    }
+                }
             }
             else {
                 /* blocking on que get disabled */
