@@ -1,68 +1,164 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <time.h>
+#include <signal.h>
+
+#include "utils_task.h"
 #include "utils_queue.h"
 
-int test_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+typedef struct
+{
+    util_task_t*    task;
+    uint32_t		stop;
+    uint32_t		stop_done;
+} task_obj_t;
+
+typedef struct
+{
+    task_obj_t task_1;
+    task_obj_t task_2;
+    int        exit;
+    util_queue_t *queue;
+} queue_context_t;
+
+queue_context_t g_queue_ctx;
+
+static uint32_t g_data[4] = {1, 2, 3, 4};
+
+static void app_task_1(void *app_var)
+{
+    queue_context_t *pObj = (queue_context_t *)app_var;
+
+    printf("app_task_1... \n");
+
+    uint32_t *data = NULL;
+
+    while(!pObj->task_1.stop)
+    {
+        if (util_queue_isempty(pObj->queue)) {
+            printf("util_queue_isempty \n");
+        }
+        else if (0 == util_queue_pop(pObj->queue, (uintptr_t*)&data, 100)) {
+            printf("app_task_1[%ld]: data=%d \n", time(0), *data);
+            continue;
+        }
+        else {
+            printf("util_queue_pop fail \n");
+        }
+
+        util_task_wait_msecs(1000);
+    }
+
+    printf("app_task_1 leave... \n");
+    pObj->task_1.stop_done = 1;
+}
+
+static void app_task_2(void *app_var)
+{
+    queue_context_t *pObj = (queue_context_t *)app_var;
+    int index = 0; 
+
+    printf("app_task_2... \n");
+
+    uint32_t *data = NULL;
+
+    while(!pObj->task_2.stop)
+    {
+        if (0 != util_queue_put(pObj->queue, (uintptr_t)&g_data[index%4], 1000)) {
+            printf("util_queue_put fail\n");
+            continue;
+        }
+        else if (0 == util_queue_peek(pObj->queue, (uintptr_t*)&data)) {
+            printf("app_task_2[%ld]: data=%d \n", time(0), *data);
+        }
+        else {
+            printf("util_queue_peek fail, isempty=%d \n", util_queue_isempty(pObj->queue));
+        }
+        index++;
+
+        util_task_wait_msecs(100);
+    }
+
+    printf("app_task_2 leave... \n");
+    pObj->task_2.stop_done = 1;
+}
+
+static void app_int_sig_handler(int sig)
+{
+    g_queue_ctx.exit = 1;
+    g_queue_ctx.task_1.stop = 1;
+    g_queue_ctx.task_2.stop = 1;
+
+    printf("app_int_sig_handler exit\n");
+    // exit(0);
+}
 
 void test_queue(void)
 {
-    util_queue_t *queue = NULL;
+    int status = 0;
 
-    queue = util_queue_creat(9);
-    if (NULL == queue) {
-        printf("util_queue_creat fail\n");
+    printf("++++++++++++++++++++++++task++++++++++++++++++++++++\n");
+
+    signal(SIGINT, app_int_sig_handler);
+
+    g_queue_ctx.exit = 0;
+
+    /* create queue */
+    status = util_queue_create(&g_queue_ctx.queue, 4, UTIL_QUEUE_FLAG_BLOCK_ON_PUT|UTIL_QUEUE_FLAG_BLOCK_ON_GET);
+    if (0 != status) {
         return;
     }
 
-    printf("++++++++++++++++++++++++util_queue_push++++++++++++++++++++++++\n");
-    for (int i = 0; i < 10; i++)
-    {
-        int result = util_queue_push(queue, &test_data[i]);
-        printf("util_queue_push: result=%d count=%ld\n", result, util_queue_count(queue));
+    /* create task1 */
+    util_task_create_params_t params;
+    memset(&params, 0, sizeof(util_task_create_params_t));
+
+    params.core_affinity = UTIL_TASK_AFFINITY_ANY;
+    params.priority      = UTIL_TASK_PRI_LOWEST;
+    params.task_main     = app_task_1;
+    params.app_var       = &g_queue_ctx;
+    strncpy(params.task_name, "MutexTask1", UTIL_MAX_TASK_NAME);
+    params.task_name[UTIL_MAX_TASK_NAME-1U] = (char)0;
+
+    status = util_task_create(&g_queue_ctx.task_1.task, &params);
+    if (0 != status) {
+        return;
     }
 
-    printf("++++++++++++++++++++++++util_queue_peek++++++++++++++++++++++++\n");
-    for (int i = 0; i < 10; i++)
-    {
-        int *data = (int*)util_queue_peek(queue);
-        printf("util_queue_peek: data=%d count=%ld \n", *data, util_queue_count(queue));
+    g_queue_ctx.task_1.stop_done = 0;
+    g_queue_ctx.task_1.stop      = 0;
+
+    /* create task2 */
+    params.core_affinity = UTIL_TASK_AFFINITY_ANY;
+    params.priority      = UTIL_TASK_PRI_LOWEST;
+    params.task_main     = app_task_2;
+    params.app_var       = &g_queue_ctx;
+    strncpy(params.task_name, "MutexTask2", UTIL_MAX_TASK_NAME);
+    params.task_name[UTIL_MAX_TASK_NAME-1U] = (char)0;
+
+    status = util_task_create(&g_queue_ctx.task_2.task, &params);
+    if (0 != status) {
+        return;
+    }
+    g_queue_ctx.task_2.stop_done = 0;
+    g_queue_ctx.task_2.stop      = 0;
+
+    while (!g_queue_ctx.exit) {
+        util_task_wait_msecs(100);
     }
 
-    printf("++++++++++++++++++++++++util_queue_pop++++++++++++++++++++++++\n");
-    for (int i = 0; i < 10; i++)
-    {
-        int *data = (int*)util_queue_pop(queue);
-        if (NULL != data) {
-            printf("util_queue_pop: data=%d count=%ld \n", *data, util_queue_count(queue));
-        }
-        else {
-            printf("util_queue_pop: data=%p \n", data);
-        }
+    /* delete task */
+    while(g_queue_ctx.task_1.stop_done == 0) {
+        util_task_wait_msecs(1000);
     }
+    util_task_delete(&g_queue_ctx.task_1.task);
 
-    printf("++++++++++++++++++++++++util_queue_push&pop++++++++++++++++++++++++\n");
-    for (int i = 0; i < 10; i++)
-    {   
-        int result = util_queue_push(queue, &test_data[i]);
-        printf("util_queue_push: result=%d count=%ld\n", result, util_queue_count(queue));
-
-        if (0 == i%2) {
-            int *data = (int*)util_queue_pop(queue);
-            printf("util_queue_pop: data=%d count=%ld \n", *data, util_queue_count(queue));
-        }
+    while(g_queue_ctx.task_2.stop_done == 0) {
+        util_task_wait_msecs(1000);
     }
+    util_task_delete(&g_queue_ctx.task_2.task);
 
-    printf("++++++++++++++++++++++++util_queue_clear++++++++++++++++++++++++\n");
-    {
-        util_queue_clear(queue);
-        printf("util_queue_clear: count=%ld\n", util_queue_count(queue));
-        
-        int *data = (int*)util_queue_pop(queue);
-        if (NULL != data) {
-            printf("util_queue_pop: data=%d count=%ld \n", *data, util_queue_count(queue));
-        }
-        else {
-            printf("util_queue_pop: data=%p \n", data);
-        }        
-    }
-
-    util_queue_destroy(queue);
+    util_queue_delete(&g_queue_ctx.queue);
 }

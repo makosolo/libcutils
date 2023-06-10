@@ -110,6 +110,14 @@ int util_task_create(util_task_t **task, const util_task_create_params_t *params
         if(status == 0) {
             status = pthread_create(&context->hndl, &thread_attr, task_main, temp_task);
             pthread_attr_destroy(&thread_attr);
+
+#ifdef  _GNU_SOURCE
+            if (0 != pthread_setname_np(context->hndl, params->task_name)) {
+                printf("err: set thread name failed , errno is %d\n", errno);
+            }
+#else
+            printf("pthread_setname_np is not supported\n");
+#endif
         }
 
         if (status == 0) {

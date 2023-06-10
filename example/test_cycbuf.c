@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
 #include "utils_cycbuf.h"
 
 char *buf[10] = {"11111", "22222", "33333", "44444", "55555", "66666", "77777", "88888", "99999", "aaaaa"};
@@ -6,7 +11,7 @@ void test_cycbuf(void)
 {
     util_cycbuf_t *cycbuf = NULL;
 
-    if (0 == util_cycbuf_create(&cycbuf, 32)) {
+    if (0 != util_cycbuf_create(&cycbuf, 32)) {
         printf("util_cycbuf_create fail\n");
         return;
     }

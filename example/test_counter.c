@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
 #include <time.h>
 
 #include "utils_task.h"
@@ -59,10 +63,20 @@ static void app_counter_task(void *app_var)
     pObj->counter_task.stop_done = 1;
 }
 
+static void app_int_sig_handler(int sig)
+{
+    g_counter_ctx.counter_task.stop = 1;
+
+    printf("app_int_sig_handler exit\n");
+    // exit(0);
+}
+
 void test_counter(void)
 {
     printf("++++++++++++++++++++++++counter++++++++++++++++++++++++\n");
 
+    signal(SIGINT, app_int_sig_handler);
+    
     util_counter_t *counter = util_counter_create(3);
     if (NULL == counter) {
         return;

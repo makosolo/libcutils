@@ -1,6 +1,9 @@
 #ifndef H_UTILS_CYCBUF_H
 #define H_UTILS_CYCBUF_H
 
+#include <stddef.h>
+#include <stdbool.h>
+
 struct util_cycbuf_s;
 typedef struct util_cycbuf_s util_cycbuf_t;
 

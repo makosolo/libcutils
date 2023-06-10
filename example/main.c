@@ -6,15 +6,17 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <time.h>
-// #include <glib.h>
 
-#include "test_list.c"
-// #include "test_queue.c"
-#include "test_cycbuf.c"
-#include "test_string.c"
-#include "test_rbtree.c"
-// #include "test_timer.c"
-#include "test_counter.c"
+extern void test_counter(void);
+extern void test_cycbuf(void);
+extern void test_list(void);
+// extern void test_queue(void);
+extern void test_rbtree(void);
+extern void test_string(void);
+extern void test_task(void);
+extern void test_mutex(void);
+extern void test_event(void);
+extern void test_queue(void);
 
 typedef struct
 {
@@ -26,7 +28,6 @@ test_context_t g_test_ctx;
 static void app_int_sig_handler(int sig)
 {
     g_test_ctx.exit = 1;
-    g_counter_ctx.counter_task.stop = 1;
 
     printf("app_int_sig_handler exit\n");
     // exit(0);
@@ -34,12 +35,19 @@ static void app_int_sig_handler(int sig)
 
 int main(int argc, const char *argv[])
 {
-    //int ret;
+    int mode = 0;
 
     printf("get user put cmdInfo:argc=%d\r\n", argc);
 
     for (int i = 0; i < argc; i++) {
         printf("%s ", argv[i]);
+    }
+
+    if (argc > 0) {
+        mode = atoi(argv[1]);
+    }
+    else {
+
     }
 
     printf("\n");
@@ -49,12 +57,18 @@ int main(int argc, const char *argv[])
 
     memset(&g_test_ctx, 0, sizeof(test_context_t));
 
-    test_list();
-    test_cycbuf();
-    test_string();
-    // test_queue();
-    test_rbtree();
-    test_counter();
+    switch (mode) {
+    case 0: test_list(); break;
+    case 1: test_cycbuf(); break;
+    case 2: test_string(); break;
+    case 3: test_rbtree(); break;
+    case 4: test_counter(); break;
+    case 5: test_task(); break;
+    case 6: test_mutex(); break;
+    case 7: test_event(); break;
+    case 8: test_queue(); break;
+    default: break;
+    }
 
     // while (!g_test_ctx.exit) {
     //     sleep(100);

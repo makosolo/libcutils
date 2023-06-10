@@ -21,7 +21,18 @@ set(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_C_COMPILER "gcc")
 SET(CMAKE_CXX_COMPILER "g++")
 
-set(SRC_DIR main.c)
+set(SRC_DIR 
+    main.c
+    test_counter.c
+    test_cycbuf.c
+    test_list.c
+    test_rbtree.c
+    test_string.c
+    test_task.c
+    test_mutex.c
+    test_event.c
+    test_queue.c
+    test_timer.c)
 
 #头文件
 include_directories(

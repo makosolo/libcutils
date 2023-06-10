@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
 #include "utils_rbtree.h"
 
 void test_rbtree(void)
@@ -7,7 +12,7 @@ void test_rbtree(void)
 
     util_rbtree_t *tree = NULL;
 
-    if (0 == util_rbtree_create(&tree, UTIL_RBTREE_KEY_TYPE_I8)) {
+    if (0 != util_rbtree_create(&tree, UTIL_RBTREE_KEY_TYPE_I8)) {
         return;
     }
 

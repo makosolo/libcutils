@@ -117,6 +117,7 @@ int util_cycbuf_create(util_cycbuf_t** cycbuf, uint32_t max_size)
     else {
         status  = -1;
         *cycbuf = NULL;
+        printf("cycbuf memory allocation failed\n");
     }
 
     return status;

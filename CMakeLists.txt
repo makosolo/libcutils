@@ -29,6 +29,7 @@ set(SRC_DIR
     src/string/utils_string.c
     # src/platform/posix/utils_timer.c
     src/platform/posix/utils_task.c
+    src/platform/posix/utils_mutex.c
     src/platform/posix/utils_event.c
     src/platform/posix/utils_queue.c
     src/utils/utils_counter.c
