@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum util_rbtree_key_type_e {
     UTIL_RBTREE_KEY_TYPE_STR,
     UTIL_RBTREE_KEY_TYPE_I8,
@@ -63,5 +67,9 @@ util_rbtree_node_t* util_rbtree_last(util_rbtree_t* tree);
 bool                util_rbtree_empty(util_rbtree_t* tree);
 int                 util_rbtree_get_key(util_rbtree_node_t* node, util_rbtree_key_type_t type, void *buf, size_t size);
 void*               util_rbtree_data(util_rbtree_node_t* node);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // H_UTILS_RBTREE_H

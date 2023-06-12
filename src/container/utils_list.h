@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct util_list_node_s {
     struct util_list_node_s* prev;
     struct util_list_node_s* next;
@@ -33,5 +37,9 @@ void              util_list_remove(util_list_node_t* node);
                 for (pos = (list)->prev, p = pos->prev; \
                     pos != (list); \
                     pos = p, p = pos->prev)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // H_UTILS_LIST_H
