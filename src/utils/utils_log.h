@@ -1,5 +1,5 @@
-#ifndef H_UTILS_MESSAGES_H
-#define H_UTILS_MESSAGES_H
+#ifndef H_UTILS_LOG_H
+#define H_UTILS_LOG_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -44,4 +44,4 @@
         continue;                                                                                                      \
     }
 
-#endif // H_UTILS_MESSAGES_H
+#endif // H_UTILS_LOG_H
