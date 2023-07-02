@@ -4,15 +4,50 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// int util_log_init();
-// int util_log_deinit();
-// int util_log_set_level();
-// int util_log_log(enum sc_log_level level, const char *fmt, ...);
+// Max file size to rotate, should not be more than 4 GB.
+#define UTIL_LOG_FILE_SIZE_MAX (2*1024*1024)
+#define UTIL_LOG_FILE_SIZE_MIN (1*1024)
+#define UTIL_FILE_COUNT_MIN    (2)
+#define UTIL_LOG_NAME_SIZE     (200)
 
-// #define util_log_debug(...) (sc_log_log(SC_LOG_DEBUG, sc_log_ap(__VA_ARGS__, "")))
-// #define util_log_info(...) (sc_log_log(SC_LOG_INFO, sc_log_ap(__VA_ARGS__, "")))
-// #define util_log_warn(...) (sc_log_log(SC_LOG_WARN, sc_log_ap(__VA_ARGS__, "")))
-// #define util_log_error(...) (sc_log_log(SC_LOG_ERROR, sc_log_ap(__VA_ARGS__, "")))
+typedef enum {
+    UTIL_LOG_DEBUG,
+    UTIL_LOG_INFO,
+    UTIL_LOG_WARN,
+    UTIL_LOG_ERROR,
+    UTIL_LOG_OFF,
+    UTIL_LOG_MAX,
+} util_log_level_e;
+
+typedef int (*OnUtilLogCallback)(void *arg, util_log_level_e level, const char *fmt, va_list va);
+
+typedef struct {
+    char                tags[UTIL_LOG_NAME_SIZE];
+	char                file_name[UTIL_LOG_NAME_SIZE];
+	size_t              file_size;
+    uint32_t            file_count;
+    bool                stdout_enabled;
+    OnUtilLogCallback   onLogCallback;
+    void*               arg;
+} util_log_cfg_t;
+
+int util_log_init(util_log_cfg_t *cfg);
+int util_log_deinit(void);
+int util_log_set_level(util_log_level_e level);
+int util_log_log(util_log_level_e level, const char *fmt, ...);
+
+// Define SC_LOG_PRINT_FILE_NAME to print file name and line no in the log line.
+#ifdef UTIL_LOG_PRINT_FILE_NAME
+#define util_log_ap(fmt, ...)                                                    \
+	"(%s:%d) " fmt, strrchr("/" __FILE__, '/') + 1, __LINE__, __VA_ARGS__
+#else
+#define util_log_ap(fmt, ...) fmt, __VA_ARGS__
+#endif
+
+#define util_log_debug(...) (util_log_log(UTIL_LOG_DEBUG, util_log_ap(__VA_ARGS__, "")))
+#define util_log_info(...) (util_log_log(UTIL_LOG_INFO, util_log_ap(__VA_ARGS__, "")))
+#define util_log_warn(...) (util_log_log(UTIL_LOG_WARN, util_log_ap(__VA_ARGS__, "")))
+#define util_log_error(...) (util_log_log(UTIL_LOG_ERROR, util_log_ap(__VA_ARGS__, "")))
 
 #define UTIL_ASSERT_GOTO(condition, tag, format, ...)                                                                  \
     do {                                                                                                               \

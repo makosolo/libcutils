@@ -17,6 +17,7 @@ extern void test_task(void);
 extern void test_mutex(void);
 extern void test_event(void);
 extern void test_queue(void);
+extern void test_log(void);
 
 typedef struct
 {
@@ -67,6 +68,7 @@ int main(int argc, const char *argv[])
     case 6: test_mutex(); break;
     case 7: test_event(); break;
     case 8: test_queue(); break;
+    case 9: test_log(); break;
     default: break;
     }
 

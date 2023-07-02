@@ -32,6 +32,7 @@ set(SRC_DIR
     src/platform/posix/utils_mutex.c
     src/platform/posix/utils_event.c
     src/platform/posix/utils_queue.c
+    src/platform/posix/utils_log.c
     src/utils/utils_counter.c
     )
 
