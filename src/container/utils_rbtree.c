@@ -8,19 +8,19 @@
 #define	RB_RED			(0)
 #define	RB_BLACK		(1)
 
-struct util_rbtree_node_s
+struct util_rbtree_node
 {
-    util_rbtree_key_t rb_key;
-    struct util_rbtree_node_s* rb_parent;
-    struct util_rbtree_node_s* rb_right;
-    struct util_rbtree_node_s* rb_left;
+    util_rbtree_key_u rb_key;
+    struct util_rbtree_node* rb_parent;
+    struct util_rbtree_node* rb_right;
+    struct util_rbtree_node* rb_left;
     char rb_color;
 };
 
 struct util_rbtree_s
 {
 	util_rbtree_node_t* rb_root;
-	int(*rb_keycmp)(util_rbtree_key_t*, util_rbtree_key_t*);
+	int(*rb_keycmp)(util_rbtree_key_u*, util_rbtree_key_u*);
 };
 
 typedef struct {
@@ -28,7 +28,7 @@ typedef struct {
     void*               data;
 } util_rbtree_data_t;
 
-static int keycmp_i8(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_i8(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->i8 < k2->i8) {
 		return -1;
@@ -39,7 +39,7 @@ static int keycmp_i8(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_i16(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_i16(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->i16 < k2->i16) {
 		return -1;
@@ -50,7 +50,7 @@ static int keycmp_i16(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_i32(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_i32(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->i32 < k2->i32) {
 		return -1;
@@ -61,7 +61,7 @@ static int keycmp_i32(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_i64(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_i64(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->i64 < k2->i64) {
 		return -1;
@@ -72,7 +72,7 @@ static int keycmp_i64(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_u8(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_u8(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->u8 < k2->u8) {
 		return -1;
@@ -83,7 +83,7 @@ static int keycmp_u8(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_u16(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_u16(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->u16 < k2->u16) {
 		return -1;
@@ -94,7 +94,7 @@ static int keycmp_u16(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_u32(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_u32(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->u32 < k2->u32) {
 		return -1;
@@ -105,7 +105,7 @@ static int keycmp_u32(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_u64(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_u64(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->u64 < k2->u64) {
 		return -1;
@@ -116,7 +116,7 @@ static int keycmp_u64(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_ptr(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_ptr(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	if (k1->ptr < k2->ptr) {
 		return -1;
@@ -127,7 +127,7 @@ static int keycmp_ptr(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
 	return 0;
 }
 
-static int keycmp_str(util_rbtree_key_t* k1, util_rbtree_key_t* k2)
+static int keycmp_str(util_rbtree_key_u* k1, util_rbtree_key_u* k2)
 {
 	return strcmp(k1->str, k2->str);
 }
@@ -346,10 +346,10 @@ static inline void __rbtree_erase_color(util_rbtree_node_t* node, util_rbtree_no
 	}
 }
 
-util_rbtree_key_t util_rbtree_key_str(char *str)
+util_rbtree_key_u util_rbtree_key_str(char *str)
 {
     size_t len = strlen(str);
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
 
     strncpy(key.str, str, UTILS_RBTREE_KEY_STR_MAX);
     key.str[len+1] = '\0';
@@ -357,70 +357,70 @@ util_rbtree_key_t util_rbtree_key_str(char *str)
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_i8(int8_t i8)
+util_rbtree_key_u util_rbtree_key_i8(int8_t i8)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.i8 = i8;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_i16(int16_t i16)
+util_rbtree_key_u util_rbtree_key_i16(int16_t i16)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.i16 = i16;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_i32(int32_t i32)
+util_rbtree_key_u util_rbtree_key_i32(int32_t i32)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.i32 = i32;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_i64(int64_t i64)
+util_rbtree_key_u util_rbtree_key_i64(int64_t i64)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.i64 = i64;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_u8(uint8_t u8)
+util_rbtree_key_u util_rbtree_key_u8(uint8_t u8)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.u8 = u8;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_u16(uint16_t u16)
+util_rbtree_key_u util_rbtree_key_u16(uint16_t u16)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.u16 = u16;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_u32(uint32_t u32)
+util_rbtree_key_u util_rbtree_key_u32(uint32_t u32)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.u32 = u32;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_u64(uint64_t u64)
+util_rbtree_key_u util_rbtree_key_u64(uint64_t u64)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.u64 = u64;
     return key;
 }
 
-util_rbtree_key_t util_rbtree_key_ptr(void *ptr)
+util_rbtree_key_u util_rbtree_key_ptr(void *ptr)
 {
-    util_rbtree_key_t key;
+    util_rbtree_key_u key;
     key.ptr = ptr;
     return key;
 }
 
-int util_rbtree_create(util_rbtree_t** tree, util_rbtree_key_type_t type)
+int util_rbtree_create(util_rbtree_t** tree, util_rbtree_key_type_e type)
 {
     util_rbtree_t *temp_tree = NULL;
 	int status = 0;
@@ -592,7 +592,7 @@ color:
 	free(node);
 }
 
-int util_rbtree_insert(util_rbtree_t* tree, util_rbtree_key_t key, void *data)
+int util_rbtree_insert(util_rbtree_t* tree, util_rbtree_key_u key, void *data)
 {
     util_rbtree_data_t *t_node = NULL;
 
@@ -606,7 +606,7 @@ int util_rbtree_insert(util_rbtree_t* tree, util_rbtree_key_t key, void *data)
         util_rbtree_node_t* parent = NULL;
 
         t_node->data = data;
-		memcpy(&t_node->node.rb_key.str, &key.str, sizeof(util_rbtree_key_t));
+		memcpy(&t_node->node.rb_key.str, &key.str, sizeof(util_rbtree_key_u));
 
         while (*p) {
 
@@ -630,7 +630,7 @@ int util_rbtree_insert(util_rbtree_t* tree, util_rbtree_key_t key, void *data)
 	return 0;
 }
 
-util_rbtree_node_t* util_rbtree_find(util_rbtree_t* tree, util_rbtree_key_t key)
+util_rbtree_node_t* util_rbtree_find(util_rbtree_t* tree, util_rbtree_key_u key)
 {
 	util_rbtree_node_t* n = tree->rb_root;
 
@@ -761,7 +761,7 @@ void* util_rbtree_data(util_rbtree_node_t* node)
     return util_list_data(node, util_rbtree_data_t, node)->data;
 }
 
-int util_rbtree_get_key(util_rbtree_node_t* node, util_rbtree_key_type_t type, void *buf, size_t size)
+int util_rbtree_get_key(util_rbtree_node_t* node, util_rbtree_key_type_e type, void *buf, size_t size)
 {
     if (NULL == node || NULL == buf || 0 == size) {
         return -1;
