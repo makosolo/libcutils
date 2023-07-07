@@ -5,6 +5,10 @@
 extern "C" {
 #endif
 
+#define UTIL_FILE_NAME_MAX  (256)
+
+int util_file_mkdirs(char *path);
+
 #ifdef __cplusplus
 }
 #endif

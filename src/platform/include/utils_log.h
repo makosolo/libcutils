@@ -5,10 +5,9 @@
 #include <stdbool.h>
 
 // Max file size to rotate, should not be more than 4 GB.
-#define UTIL_LOG_FILE_SIZE_MAX (2*1024*1024)
-#define UTIL_LOG_FILE_SIZE_MIN (1*1024)
-#define UTIL_FILE_COUNT_MIN    (2)
-#define UTIL_LOG_NAME_SIZE     (200)
+#define UTIL_LOG_FILE_SIZE_MAX      (2*1024*1024)
+#define UTIL_LOG_FILE_SIZE_MIN      (1*1024)
+#define UTIL_LOG_FILE_COUNT_MIN     (2)
 
 typedef enum {
     UTIL_LOG_DEBUG,
@@ -22,8 +21,8 @@ typedef enum {
 typedef int (*OnUtilLogCallback)(void *arg, util_log_level_e level, const char *fmt, va_list va);
 
 typedef struct {
-    char                tags[UTIL_LOG_NAME_SIZE];
-	char                file_name[UTIL_LOG_NAME_SIZE];
+    char                tags[64];
+	char                file_path[128];
 	size_t              file_size;
     uint32_t            file_count;
     bool                stdout_enabled;

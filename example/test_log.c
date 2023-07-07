@@ -6,9 +6,10 @@
 #include <time.h>
 #include <signal.h>
 
+#include "utils_file.h"
 #include "utils_log.h"
 
-static int exit_flag = 0; 
+static int exit_flag = 0;
 static int run_count = 0;
 static char *g_log_levels[UTIL_LOG_MAX] = {"DEBUG", "INFO", "WARN", "ERROR", "OFF"};
 
@@ -43,15 +44,15 @@ void test_log(void)
 
     memset(&cfg, 0, sizeof(util_log_cfg_t));
 
-    snprintf(cfg.tags, UTIL_LOG_NAME_SIZE, "UTIL_LOG");
+    snprintf(cfg.tags, sizeof(cfg.tags), "UTIL_LOG");
 
-    cfg.stdout_enabled  = true;
-    // cfg.arg             = NULL;
-    // cfg.onLogCallback   = OnLogPrint;
+    // cfg.stdout_enabled  = true;
+    cfg.arg             = NULL;
+    cfg.onLogCallback   = OnLogPrint;
 
     cfg.file_count = 5;
     cfg.file_size  = 1024;
-    snprintf(cfg.file_name, UTIL_LOG_NAME_SIZE, "/tmp/util_log_test.log");
+    snprintf(cfg.file_path, sizeof(cfg.file_path), "/tmp/test");
 
     UTIL_ASSERT_RET(0 == util_log_init(&cfg), "util_log_init fail!\n");
 
@@ -74,7 +75,7 @@ void test_log(void)
         }
         else if (run_count >= 20) {
             UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_WARN), "util_log_set_level fail!\n");
-        }        
+        }
         else if (run_count >= 10) {
             UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_ERROR), "util_log_set_level fail!\n");
         }
