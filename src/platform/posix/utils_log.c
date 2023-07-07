@@ -52,7 +52,7 @@ static util_log_context_t g_log_ctx_t = {0};
 
 static char *g_log_levels[UTIL_LOG_MAX] = {"DEBUG", "INFO", "WARN", "ERROR", "OFF"};
 
-static int util_log_list_init(util_list_t *list)
+static void util_log_list_init(util_list_t *list)
 {
 	util_list_init(list);
 }
@@ -77,8 +77,6 @@ static int util_log_list_remove(util_list_t *list)
 	util_list_node_t *node = util_list_head(list);
 
 	if (NULL != node) {
-		char link_name[128] = "";
-
 		data = util_list_data(node, list_node_data_t, node);
 
 		/* remove old file */
@@ -155,7 +153,6 @@ static int util_log_file(util_log_context_t *obj, util_log_level_e level, const 
 {
 	util_log_context_t *pObj = obj;
 	int size = 0;
-	bool remove = false;
 
 start:
 	if (NULL != pObj->fp && pObj->file_size < pObj->file_size_limit) {
@@ -304,46 +301,15 @@ static int util_log_load(util_log_context_t *obj)
 	return 0;
 }
 
-int util_log_init(util_log_cfg_t *cfg)
+int util_log_init(const char *tags)
 {
 	util_log_context_t *pObj = &g_log_ctx_t;
-
-    if (NULL == cfg) {
-        return -1;
-    }
 
     if (pObj->is_init) {
 		return 0;
 	}
 
-	pObj->stdout_enabled  = cfg->stdout_enabled;
-	pObj->onLogCallback   = cfg->onLogCallback;
-	pObj->arg             = cfg->arg;
-
-	strncpy(pObj->tags, cfg->tags, sizeof(pObj->tags)-1);
-
-	if (0 != cfg->file_path[0]) {
-		pObj->file_size_limit = cfg->file_size;
-		if (pObj->file_size_limit > UTIL_LOG_FILE_SIZE_MAX) {
-			pObj->file_size_limit = UTIL_LOG_FILE_SIZE_MAX;
-		}
-
-		if (pObj->file_size_limit < UTIL_LOG_FILE_SIZE_MIN) {
-			pObj->file_size_limit = UTIL_LOG_FILE_SIZE_MIN;
-		}
-
-		pObj->file_count_limit = cfg->file_count;
-		if (pObj->file_count_limit < UTIL_LOG_FILE_COUNT_MIN) {
-			pObj->file_count_limit = UTIL_LOG_FILE_COUNT_MIN;
-		}
-
-		strncpy(pObj->file_path, cfg->file_path, sizeof(pObj->file_path));
-		if (0 != util_file_mkdirs(cfg->file_path)) {
-			return -1;
-		}
-
-		snprintf(pObj->file_name, sizeof(pObj->file_name), "%s/%s.ulog", pObj->file_path, pObj->tags);
-	}
+	strncpy(pObj->tags, tags, sizeof(pObj->tags)-1);
 
 	/* create mutex */
 	if (0 != util_mutex_create(&pObj->mutex)) {
@@ -351,8 +317,6 @@ int util_log_init(util_log_cfg_t *cfg)
 	}
 
 	util_log_list_init(&pObj->list);
-
-	util_log_load(pObj);
 
 	pObj->is_init = true;
 
@@ -380,6 +344,64 @@ int util_log_deinit(void)
     memset(pObj, 0, sizeof(util_log_context_t));
 
     return result;
+}
+
+int util_log_set_stdout(bool enabled)
+{
+	util_log_context_t *pObj = &g_log_ctx_t;
+
+    util_mutex_lock(pObj->mutex);
+    pObj->stdout_enabled  = enabled;
+    util_mutex_unlock(pObj->mutex);
+
+	return 0;
+}
+
+int util_log_set_file(const char *path, size_t size, uint32_t count)
+{
+	util_log_context_t *pObj = &g_log_ctx_t;
+
+    util_mutex_lock(pObj->mutex);
+
+	pObj->file_size_limit = size;
+	if (pObj->file_size_limit > UTIL_LOG_FILE_SIZE_MAX) {
+		pObj->file_size_limit = UTIL_LOG_FILE_SIZE_MAX;
+	}
+
+	if (pObj->file_size_limit < UTIL_LOG_FILE_SIZE_MIN) {
+		pObj->file_size_limit = UTIL_LOG_FILE_SIZE_MIN;
+	}
+
+	pObj->file_count_limit = count;
+	if (pObj->file_count_limit < UTIL_LOG_FILE_COUNT_MIN) {
+		pObj->file_count_limit = UTIL_LOG_FILE_COUNT_MIN;
+	}
+
+	strncpy(pObj->file_path, path, sizeof(pObj->file_path));
+	if (0 != util_file_mkdirs(path)) {
+		util_mutex_unlock(pObj->mutex);
+		return -1;
+	}
+
+	snprintf(pObj->file_name, sizeof(pObj->file_name), "%s/%s.ulog", pObj->file_path, pObj->tags);
+
+	util_log_load(pObj);
+
+    util_mutex_unlock(pObj->mutex);
+
+	return 0;
+}
+
+int util_log_set_callback(OnUtilLogCallback callback, void *arg)
+{
+	util_log_context_t *pObj = &g_log_ctx_t;
+
+    util_mutex_lock(pObj->mutex);
+	pObj->onLogCallback   = callback;
+	pObj->arg             = arg;
+    util_mutex_unlock(pObj->mutex);
+
+	return 0;
 }
 
 int util_log_set_level(util_log_level_e level)

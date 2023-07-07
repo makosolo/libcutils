@@ -8,37 +8,33 @@
 
 #include "utils_file.h"
 
-int util_file_mkdirs(char *path)
+int util_file_mkdirs(const char *path)
 {
-    char str[512];
-    char *p = str;
-    int result = 0;
+    if (access(path, F_OK) == 0) {
+        return 0;
+    }
 
-    strncpy(str, path, 512);
+    char *p = strchr(path, '/');
 
     while (*p)
     {
-        if(*p == '/' && str != p)
-        {
-            *p = '\0';
-            if(0 != access(str, 0)) {
-                result = mkdir(str, 0777);
-                if(result != 0 && errno != EEXIST) {
-                    printf("mkdir=%s\n", str);
-                    perror("mkdir fail");
+        *p = '\0';
+        if(0 != access(path, F_OK)) {
+            if (mkdir(path, 0777) != 0) {
+                if (errno != EEXIST) {
+                    fprintf(stderr, "Failed to create directory %s: %s\n", path, strerror(errno));
                     return -1;
                 }
             }
             *p = '/';
         }
-        p++;
+
+        p = strchr(p + 1, '/');
     }
 
-    if(0 != access(str, 0)) {
-        result = mkdir(str, 0777);
-        if(result != 0 && errno != EEXIST) {
-            printf("mkdir=%s\n", str);
-            perror("mkdir fail");
+    if (mkdir(path, 0777) != 0) {
+        if (errno != EEXIST) {
+            fprintf(stderr, "Failed to create directory %s: %s\n", path, strerror(errno));
             return -1;
         }
     }

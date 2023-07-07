@@ -40,22 +40,10 @@ void test_log(void)
 
     printf("++++++++++++++++++++++++log++++++++++++++++++++++++\n");
 
-    util_log_cfg_t cfg;
-
-    memset(&cfg, 0, sizeof(util_log_cfg_t));
-
-    snprintf(cfg.tags, sizeof(cfg.tags), "UTIL_LOG");
-
-    // cfg.stdout_enabled  = true;
-    cfg.arg             = NULL;
-    cfg.onLogCallback   = OnLogPrint;
-
-    cfg.file_count = 5;
-    cfg.file_size  = 1024;
-    snprintf(cfg.file_path, sizeof(cfg.file_path), "/tmp/test");
-
-    UTIL_ASSERT_RET(0 == util_log_init(&cfg), "util_log_init fail!\n");
-
+    UTIL_ASSERT_RET(0 == util_log_init("UTIL_LOG"), "util_log_init fail!\n");
+    UTIL_ASSERT_RET(0 == util_log_set_stdout(true), "util_log_set_stdout fail!\n");
+    UTIL_ASSERT_RET(0 == util_log_set_file("/tmp/test/", 1024, 5), "util_log_set_file fail!\n");
+    UTIL_ASSERT_RET(0 == util_log_set_callback(OnLogPrint, NULL), "util_log_set_callback fail!\n");
     UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_OFF), "util_log_set_level fail!\n");
 
     while (!exit_flag) {

@@ -7,7 +7,7 @@ extern "C" {
 
 #define UTIL_FILE_NAME_MAX  (256)
 
-int util_file_mkdirs(char *path);
+int util_file_mkdirs(const char *path);
 
 #ifdef __cplusplus
 }
