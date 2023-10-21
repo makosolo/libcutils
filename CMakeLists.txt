@@ -5,7 +5,7 @@ message(STATUS "CMAKE_SOURCE_DIR->" ${CMAKE_SOURCE_DIR})
 message(STATUS "PROJECT_SOURCE_DIR->)" ../../..)
 message(STATUS "******************************************************************")
 
-project(libutils)
+project(libcutils)
 
 find_package(Git)
 
@@ -13,13 +13,22 @@ message(STATUS "GIT_REPOSITORY_VERSION ${GIT_REPO_VERSION}")
 
 set(CMAKE_CXX_STANDARD 11)
 
-# SET(CMAKE_C_COMPILER "/opt/tools/aos_hw/SDK/aos/arm64/common/bin/clang")
-# SET(CMAKE_CXX_COMPILER "/opt/tools/aos_hw/SDK/aos/arm64/common/bin/clang++")
-# SET(CMAKE_C_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-gcc")
-# SET(CMAKE_CXX_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-g++")
+if(${PLATFORM} STREQUAL "linux")
+    SET(CMAKE_C_COMPILER "gcc")
+    SET(CMAKE_CXX_COMPILER "g++")
 
-SET(CMAKE_C_COMPILER "gcc")
-SET(CMAKE_CXX_COMPILER "g++")
+elseif(${PLATFORM} STREQUAL "tda4vh")
+    SET(CMAKE_C_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-gcc")
+    SET(CMAKE_CXX_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-g++")
+
+elseif(${PLATFORM} STREQUAL "imx-x11")
+    SET(CMAKE_C_COMPILER "/opt/tools/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-gcc")
+    SET(CMAKE_CXX_COMPILER "/opt/tools/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-g++")
+
+else()
+    MESSAGE(FATAL_ERROR "unsupport compile platform")
+
+endif()
 
 set(SRC_DIR
     src/container/utils_list.c
@@ -57,9 +66,9 @@ endif()
 #add_compile_options(-Wall -g)
 
 #源文件
-add_library(utils SHARED ${SRC_DIR})
+add_library(cutils SHARED ${SRC_DIR})
 
-target_link_libraries(utils
+target_link_libraries(cutils
     pthread
 )
 

@@ -50,17 +50,17 @@ rm -rf out/*
 rm -rf example/out/*
 
 cd out
-cmake -DBUILD_MODE=debug ..;make clean;make -j32
+cmake -DPLATFORM=linux -DBUILD_MODE=debug ..;make clean;make -j32
 if [ $? -ne 0 ];then
 	show_fail
 	exit -1
 fi
 
-cp -rf libutils.so libutils.so.$VERSION
+cp -rf libcutils.so libcutils.so.$VERSION
 cd -
 
 cd example/out
-cmake -DBUILD_MODE=debug ..;make clean;make -j32
+cmake -DPLATFORM=linux -DBUILD_MODE=debug ..;make clean;make -j32
 if [ $? -ne 0 ];then
 	show_fail
 	exit -1
