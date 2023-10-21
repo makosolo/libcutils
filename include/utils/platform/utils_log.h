@@ -42,34 +42,34 @@ int util_log_log(util_log_level_e level, const char *file, int line, const char 
 #define util_log_warn(...)  (util_log_log(UTIL_LOG_WARN,  UTIL_LOG_FILE_NAME, __LINE__, __func__, util_log_ap(__VA_ARGS__, "")))
 #define util_log_error(...) (util_log_log(UTIL_LOG_ERROR, UTIL_LOG_FILE_NAME, __LINE__, __func__, util_log_ap(__VA_ARGS__, "")))
 
-#define UTIL_ASSERT_GOTO(condition, tag, format, ...)                                                                  \
-    do {                                                                                                               \
-        if (!(condition)) {                                                                                            \
-            fprintf(stderr, "[ERROR][%s:%d]" format "\n", __func__, __LINE__, ##__VA_ARGS__);                          \
-            goto tag;                                                                                                  \
-        }                                                                                                              \
+#define UTIL_LOG_ASSERT_GOTO(condition, tag, format, ...)       \
+    do {                                                        \
+        if (!(condition)) {                                     \
+            util_log_error("ASSERT: "format);                   \
+            goto tag;                                           \
+        }                                                       \
     } while (0)
 
-#define UTIL_ASSERT_RET(condition, format, ...)                                                                        \
-    do {                                                                                                               \
-        if (!(condition)) {                                                                                            \
-            fprintf(stderr, "[ERROR][%s:%d]" format "\n", __func__, __LINE__, ##__VA_ARGS__);                          \
-            return;                                                                                                    \
-        }                                                                                                              \
+#define UTIL_LOG_ASSERT_RET(condition, format, ...)             \
+    do {                                                        \
+        if (!(condition)) {                                     \
+            util_log_error("ASSERT: "format);                   \
+            return;                                             \
+        }                                                       \
     } while (0)
 
-#define UTIL_ASSERT_RET_VAL(condition, ret, format, ...)                                                               \
-    do {                                                                                                               \
-        if (!(condition)) {                                                                                            \
-            fprintf(stderr, "[ERROR][%s:%d]" format "\n", __func__, __LINE__, ##__VA_ARGS__);                          \
-            return ret;                                                                                                \
-        }                                                                                                              \
+#define UTIL_LOG_ASSERT_RET_VAL(condition, ret, format, ...)    \
+    do {                                                        \
+        if (!(condition)) {                                     \
+            util_log_error("ASSERT: "format);                   \
+            return ret;                                         \
+        }                                                       \
     } while (0)
 
-#define UTIL_ASSERT_CONTINUE(condition, format, ...)                                                                   \
-    if (!(condition)) {                                                                                                \
-        fprintf(stderr, "[ERROR][%s:%d]" format "\n", __func__, __LINE__, ##__VA_ARGS__);                              \
-        continue;                                                                                                      \
+#define UTIL_LOG_ASSERT_CONTINUE(condition, format, ...)        \
+    if (!(condition)) {                                         \
+        util_log_error("ASSERT: "format);                       \
+        continue;                                               \
     }
 
 #endif // H_UTILS_LOG_H

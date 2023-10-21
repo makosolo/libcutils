@@ -6,6 +6,7 @@
 #include <time.h>
 #include <signal.h>
 
+#include "utils/utils_assert.h"
 #include "platform/utils_file.h"
 #include "platform/utils_log.h"
 
@@ -56,16 +57,16 @@ void test_log(void)
             // UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_OFF), "util_log_set_level fail!\n");
         }
         else if (run_count >= 40) {
-            UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_DEBUG), "util_log_set_level fail!\n");
+            UTIL_LOG_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_DEBUG), "util_log_set_level fail!\n");
         }
         else if (run_count >= 30) {
-            UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_INFO), "util_log_set_level fail!\n");
+            UTIL_LOG_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_INFO), "util_log_set_level fail!\n");
         }
         else if (run_count >= 20) {
-            UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_WARN), "util_log_set_level fail!\n");
+            UTIL_LOG_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_WARN), "util_log_set_level fail!\n");
         }
         else if (run_count >= 10) {
-            UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_ERROR), "util_log_set_level fail!\n");
+            UTIL_LOG_ASSERT_RET(0 != util_log_set_level(UTIL_LOG_ERROR), "util_log_set_level fail!\n");
         }
 
         run_count++;
