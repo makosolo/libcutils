@@ -4,8 +4,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "utils_task.h"
-#include "utils_counter.h"
+#include "platform/include/utils_task.h"
+#include "utils/utils_counter.h"
 
 typedef struct {
     util_task_t*    task;

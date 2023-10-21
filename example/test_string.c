@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "utils_string.h"
+#include "string/utils_string.h"
 
 void test_string(void)
 {

@@ -8,6 +8,11 @@
 extern "C" {
 #endif
 
+struct util_array_s;
+typedef struct util_array_s util_array_t;
+
+int util_array_create(util_array_t **array, bool zero_terminated, bool clear, size_t elt_size, size_t reserved_size);
+
 #ifdef __cplusplus
 }
 #endif

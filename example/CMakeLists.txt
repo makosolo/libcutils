@@ -45,12 +45,7 @@ set(SRC_DIR
     test_log.c)
 
 #头文件
-include_directories(
-    ../src/container
-    ../src/string
-    ../src/utils
-    ../src/platform/include
-    )
+include_directories(../include/utils)
 
 #链接库
 link_directories(../out/)

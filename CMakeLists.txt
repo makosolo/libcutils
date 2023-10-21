@@ -50,10 +50,10 @@ set(SRC_DIR
 include_directories(
                     .
                     src
-                    src/container
-                    src/string
-                    src/utils
-                    src/platform/include
+                    include/utils/container
+                    include/utils/string
+                    include/utils/utils
+                    include/utils/platform/include
                     )
 
 #宏定义

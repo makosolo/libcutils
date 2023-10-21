@@ -5,8 +5,8 @@
 #include <time.h>
 #include <signal.h>
 
-#include "utils_log.h"
-#include "utils_file.h"
+#include "platform/include/utils_log.h"
+#include "platform/include/utils_file.h"
 
 
 void test_file(void)
