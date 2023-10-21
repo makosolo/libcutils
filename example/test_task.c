@@ -5,7 +5,7 @@
 #include <time.h>
 #include <signal.h>
 
-#include "platform/include/utils_task.h"
+#include "platform/utils_task.h"
 
 typedef struct
 {

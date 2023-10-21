@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "platform/include/utils_task.h"
-#include "platform/include/utils_timer.h"
+#include "platform/utils_task.h"
+#include "platform/utils_timer.h"
 
 typedef struct {
     util_task_t*    task;

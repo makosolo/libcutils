@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "platform/include/utils_task.h"
+#include "platform/utils_task.h"
 #include "utils/utils_counter.h"
 
 typedef struct {

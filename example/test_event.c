@@ -5,8 +5,8 @@
 #include <time.h>
 #include <signal.h>
 
-#include "platform/include/utils_task.h"
-#include "platform/include/utils_event.h"
+#include "platform/utils_task.h"
+#include "platform/utils_event.h"
 
 typedef struct
 {

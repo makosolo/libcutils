@@ -53,7 +53,7 @@ include_directories(
                     include/utils/container
                     include/utils/string
                     include/utils/utils
-                    include/utils/platform/include
+                    include/utils/platform
                     )
 
 #宏定义
