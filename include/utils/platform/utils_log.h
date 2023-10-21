@@ -25,7 +25,7 @@ int util_log_set_stdout(bool enabled);
 int util_log_set_file(const char *path, size_t size, uint32_t count);
 int util_log_set_callback(OnUtilLogCallback callback, void *arg);
 int util_log_set_level(util_log_level_e level);
-int util_log_log(util_log_level_e level, const char *fmt, ...);
+int util_log_log(util_log_level_e level, const char *file, int line, const char *func, const char *fmt, ...);
 
 // Define SC_LOG_PRINT_FILE_NAME to print file name and line no in the log line.
 #ifdef UTIL_LOG_PRINT_FILE_NAME
@@ -35,10 +35,12 @@ int util_log_log(util_log_level_e level, const char *fmt, ...);
 #define util_log_ap(fmt, ...) fmt, __VA_ARGS__
 #endif
 
-#define util_log_debug(...) (util_log_log(UTIL_LOG_DEBUG, util_log_ap(__VA_ARGS__, "")))
-#define util_log_info(...) (util_log_log(UTIL_LOG_INFO, util_log_ap(__VA_ARGS__, "")))
-#define util_log_warn(...) (util_log_log(UTIL_LOG_WARN, util_log_ap(__VA_ARGS__, "")))
-#define util_log_error(...) (util_log_log(UTIL_LOG_ERROR, util_log_ap(__VA_ARGS__, "")))
+#define UTIL_LOG_FILE_NAME    (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
+
+#define util_log_debug(...) (util_log_log(UTIL_LOG_DEBUG, UTIL_LOG_FILE_NAME, __LINE__, __func__, util_log_ap(__VA_ARGS__, "")))
+#define util_log_info(...)  (util_log_log(UTIL_LOG_INFO,  UTIL_LOG_FILE_NAME, __LINE__, __func__, util_log_ap(__VA_ARGS__, "")))
+#define util_log_warn(...)  (util_log_log(UTIL_LOG_WARN,  UTIL_LOG_FILE_NAME, __LINE__, __func__, util_log_ap(__VA_ARGS__, "")))
+#define util_log_error(...) (util_log_log(UTIL_LOG_ERROR, UTIL_LOG_FILE_NAME, __LINE__, __func__, util_log_ap(__VA_ARGS__, "")))
 
 #define UTIL_ASSERT_GOTO(condition, tag, format, ...)                                                                  \
     do {                                                                                                               \

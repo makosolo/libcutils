@@ -140,8 +140,6 @@ int util_task_create(util_task_t **task, const util_task_create_params_t *params
 
 int util_task_delete(util_task_t **task)
 {
-    int status = 0;
-
     if (NULL == task || NULL == *task) {
         return -1;
     }

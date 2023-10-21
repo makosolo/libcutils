@@ -276,7 +276,7 @@ int util_queue_put(util_queue_t *queue, uintptr_t data, uint32_t timeout)
                         ts.tv_sec  = sec;
 
                         queue->blockedOnPut = true;
-                        retVal = pthread_cond_timedwait(&context->condPut,
+                        retVal = pthread_cond_timedwait(&context->condPut, 
                                                         &context->lock,
                                                         &ts);
                         queue->blockedOnPut = false;
@@ -407,7 +407,7 @@ int util_queue_pop(util_queue_t *queue, uintptr_t *data, uint32_t timeout)
                         ts.tv_sec  = sec;
 
                         queue->blockedOnGet = true;
-                        retVal = pthread_cond_timedwait(&context->condGet,
+                        retVal = pthread_cond_timedwait(&context->condGet, 
                                                         &context->lock,
                                                         &ts);
                         queue->blockedOnGet = false;

@@ -10,32 +10,28 @@
 
 int util_file_mkdirs(const char *path)
 {
-    if (access(path, F_OK) == 0) {
+    if (0 == access(path, F_OK)) {
         return 0;
     }
 
-    char *p = strchr(path, '/');
+    char *p = (char *)path;
 
-    while (*p)
+    while (*p && (p = strchr(p, '/')))
     {
         *p = '\0';
-        if(0 != access(path, F_OK)) {
-            if (mkdir(path, 0777) != 0) {
-                if (errno != EEXIST) {
-                    fprintf(stderr, "Failed to create directory %s: %s\n", path, strerror(errno));
-                    return -1;
-                }
+        if(path != p && 0 != access(path, F_OK) && 0 != mkdir(path, 0777)) {
+            if (errno != EEXIST) {
+                fprintf(stderr, "Failed to create directory %s: %s\n", path, strerror(errno));
             }
-            *p = '/';
         }
+        *p = '/';
 
-        p = strchr(p + 1, '/');
+        p++;
     }
 
-    if (mkdir(path, 0777) != 0) {
+    if (0 != access(path, F_OK) && 0 != mkdir(path, 0777)) {
         if (errno != EEXIST) {
             fprintf(stderr, "Failed to create directory %s: %s\n", path, strerror(errno));
-            return -1;
         }
     }
 

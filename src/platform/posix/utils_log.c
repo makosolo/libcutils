@@ -17,7 +17,7 @@
 // #define UTIL_LOG_DEBUG
 
 #ifdef UTIL_LOG_DEBUG
-#define UTIL_LOG_PRINT(msg, ...)	printf("[%s:%d] "msg, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define UTIL_LOG_PRINT(msg, ...)	printf("util_log:[%s:%d] "msg, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #else
 #define UTIL_LOG_PRINT(msg, ...)
 #endif
@@ -108,9 +108,8 @@ static void util_log_list_clear(util_list_t *list)
 	}
 }
 
-static int util_log_print_header(util_log_context_t *obj, FILE *fp, util_log_level_e level)
+static int util_log_print_header(FILE *fp, util_log_level_e level, const char *file, int line, const char *func)
 {
-	util_log_context_t *pObj = obj;
 	int result = 0;
 	time_t t;
 	struct tm tt, *tm;
@@ -122,10 +121,11 @@ static int util_log_print_header(util_log_context_t *obj, FILE *fp, util_log_lev
 		return -1;
 	}
 
-	result = fprintf(fp, "[%d-%02d-%02d %02d:%02d:%02d][%-5s][%s] ",
+	result = fprintf(fp, "[%d-%02d-%02d %02d:%02d:%02d][%-5s][%s][%s:%d] ",
 		     tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
 		     tm->tm_hour, tm->tm_min, tm->tm_sec,
-		     g_log_levels[level], pObj->tags);
+		     g_log_levels[level], file,
+			 func, line);
 
 	if (result < 0) {
 		return -1;
@@ -134,11 +134,11 @@ static int util_log_print_header(util_log_context_t *obj, FILE *fp, util_log_lev
 	return result;
 }
 
-static int util_log_stdout(util_log_context_t *obj, util_log_level_e level, const char *fmt, va_list va)
+static int util_log_stdout(util_log_context_t *obj, util_log_level_e level, const char *file, int line, const char *func, const char *fmt, va_list va)
 {
 	FILE *dest = (level == UTIL_LOG_ERROR) ? stderr : stdout;
 
-	if (util_log_print_header(obj, dest, level) < 0) {
+	if (util_log_print_header(dest, level, file, line, func) < 0) {
 		return -1;
 	}
 
@@ -149,14 +149,14 @@ static int util_log_stdout(util_log_context_t *obj, util_log_level_e level, cons
 	return 0;
 }
 
-static int util_log_file(util_log_context_t *obj, util_log_level_e level, const char *fmt, va_list va)
+static int util_log_file(util_log_context_t *obj, util_log_level_e level, const char *file, int line, const char *func, const char *fmt, va_list va)
 {
 	util_log_context_t *pObj = obj;
 	int size = 0;
 
 start:
 	if (NULL != pObj->fp && pObj->file_size < pObj->file_size_limit) {
-		size = util_log_print_header(pObj, pObj->fp, level);
+		size = util_log_print_header(pObj->fp, level, file, line, func);
 		if (size < 0) {
 			return -1;
 		}
@@ -234,6 +234,7 @@ static int util_log_load(util_log_context_t *obj)
 	struct dirent **namelist;
 	int total = 0;
 	char log_file[512] = "";
+	FILE *fp = NULL;
 
 	/* scan directory */
 	total = scandir(pObj->file_path, &namelist ,0, alphasort);
@@ -262,38 +263,40 @@ static int util_log_load(util_log_context_t *obj)
 		}
 	}
 
-	/* open file */
-	FILE *fp = fopen(pObj->file_name, "a+");
+	if (0 == access(pObj->file_name, F_OK)) {
+		/* open file */
+		fp = fopen(pObj->file_name, "a+");
 
-#if 0
-	if (NULL == fp) {
-		UTIL_LOG_PRINT("[%s] soft link error? \n", pObj->file_name);
+	#if 0
+		if (NULL == fp) {
+			UTIL_LOG_PRINT("[%s] soft link error? \n", pObj->file_name);
 
-		/* try delete */
-		unlink(pObj->file_name);
+			/* try delete */
+			unlink(pObj->file_name);
 
-		fp = fopen(namelist[pObj->file_count-1]->d_name, "a+");
+			fp = fopen(namelist[pObj->file_count-1]->d_name, "a+");
+			if (NULL != fp) {
+				symlink(namelist[pObj->file_count-1]->d_name, pObj->file_name);
+			}
+		}
+	#endif
+
 		if (NULL != fp) {
-			symlink(namelist[pObj->file_count-1]->d_name, pObj->file_name);
-		}
-	}
-#endif
+			long size = 0;
 
-	if (NULL != fp) {
-		long size = 0;
+			if (0 != fseek(fp, 0, SEEK_END)) {
+				UTIL_LOG_PRINT("fseek fail, errno=%d \n", errno);
+			}
 
-		if (0 != fseek(fp, 0, SEEK_END)) {
-			UTIL_LOG_PRINT("fseek fail, errno=%d \n", errno);
-		}
+			size = ftell(fp);
+			if (size < 0) {
+				size = 0;
+				UTIL_LOG_PRINT("ftell fail, errno=%d \n", errno);
+			}
 
-		size = ftell(fp);
-		if (size < 0) {
-			size = 0;
-			UTIL_LOG_PRINT("ftell fail, errno=%d \n", errno);
-		}
-
-		pObj->fp 		= fp;
-		pObj->file_size = size;
+			pObj->fp 		= fp;
+			pObj->file_size = size;
+		}		
 	}
 
 	UTIL_LOG_PRINT("[%s]: fp=%p size=%ld \n", pObj->file_name, fp, pObj->file_size);
@@ -308,6 +311,8 @@ int util_log_init(const char *tags)
     if (pObj->is_init) {
 		return 0;
 	}
+
+	memset(pObj, 0, sizeof(util_log_context_t));
 
 	strncpy(pObj->tags, tags, sizeof(pObj->tags)-1);
 
@@ -377,8 +382,8 @@ int util_log_set_file(const char *path, size_t size, uint32_t count)
 		pObj->file_count_limit = UTIL_LOG_FILE_COUNT_MIN;
 	}
 
-	strncpy(pObj->file_path, path, sizeof(pObj->file_path));
-	if (0 != util_file_mkdirs(path)) {
+	strncpy(pObj->file_path, path, sizeof(pObj->file_path)-1);
+	if (0 != util_file_mkdirs(pObj->file_path)) {
 		util_mutex_unlock(pObj->mutex);
 		return -1;
 	}
@@ -415,7 +420,7 @@ int util_log_set_level(util_log_level_e level)
 	return 0;
 }
 
-int util_log_log(util_log_level_e level, const char *fmt, ...)
+int util_log_log(util_log_level_e level, const char *file, int line, const char *func, const char *fmt, ...)
 {
 	util_log_context_t *pObj = &g_log_ctx_t;
     va_list va;
@@ -423,20 +428,20 @@ int util_log_log(util_log_level_e level, const char *fmt, ...)
 
     util_mutex_lock(pObj->mutex);
 
-	if (level < pObj->level) {
+	if (level >= UTIL_LOG_OFF || level < pObj->level) {
 		util_mutex_unlock(pObj->mutex);
 		return 0;
 	}
 
 	if (pObj->stdout_enabled) {
 		va_start(va, fmt);
-		result |= util_log_stdout(pObj, level, fmt, va);
+		result |= util_log_stdout(pObj, level, file, line, func, fmt, va);
 		va_end(va);
 	}
 
 	if (0 != pObj->file_name[0]) {
 		va_start(va, fmt);
-		result |= util_log_file(pObj, level, fmt, va);
+		result |= util_log_file(pObj, level, file, line, func, fmt, va);
 		va_end(va);
 	}
 
