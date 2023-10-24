@@ -35,6 +35,7 @@ set(SRC_DIR
     # src/container/utils_queue.c
     src/container/utils_cycbuf.c
     src/container/utils_rbtree.c
+    src/container/utils_map.c
     src/string/utils_string.c
     # src/platform/posix/utils_timer.c
     src/platform/posix/utils_task.c
