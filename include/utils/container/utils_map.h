@@ -60,7 +60,7 @@ extern "C" {
 	 *         'false' on out of memory or if 'load_factor' value is       \
 	 *          invalid.                                                   \
 	 */                                                                    \
-	bool util_map_init_##name(struct util_map_##name *map, uint32_t cap,   \
+	bool util_map_create_##name(struct util_map_##name *map, uint32_t cap,   \
 				uint32_t load_factor);                                     \
                                                                            \
 	/**                                                                    \

@@ -5,49 +5,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 
-#include "utils_event.h"
-#include "utils_mutex.h"
-
 #include "utils_queue.h"
-
-struct util_queue_s {
-
-  uint32_t cur_rd;
-  /**< Current read index */
-
-  uint32_t cur_wr;
-  /**< Current write index  */
-
-  uint32_t count;
-  /**< Count of element in queue  */
-
-  uint32_t max_ele;
-  /**< Max elements that be present in the queue  */
-
-  uintptr_t *queue;
-  /**< Address of data area of the queue elements */
-
-  util_event_t* block_rd;
-  /**< Read semaphore */
-
-  util_event_t* block_wr;
-  /**< Write semaphore  */
-
-  util_mutex_t* lock;
-  /**< Queue lock semaphore  */
-
-  void *context;
-  /**< Private context of queue handle */
-
-  uint32_t flags;
-  /**< Controls how APIs behave internally, i.e blocking wait or non-blocking */
-
-  volatile bool blockedOnGet;
-  /**< Flag indicating queue is blocked on get operation */
-
-  volatile bool blockedOnPut;
-  /**< Flag indicating queue is blocked on put operation */
-};
 
 typedef struct util_queue_context_s {
     pthread_mutex_t lock;
@@ -55,47 +13,37 @@ typedef struct util_queue_context_s {
     pthread_cond_t  condPut;
 } util_queue_context_t;
 
-int util_queue_create(util_queue_t **queue, uint32_t max_elements, uint32_t flags)
+int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags)
 {
     int status = 0;
     util_queue_context_t *context = NULL;
-    util_queue_t *tmp_queue = NULL;
 
     if (NULL == queue || 0U == max_elements) {
-        return -1;
-    }
-
-    tmp_queue = (util_queue_t*)malloc(sizeof(util_queue_t));
-    if (NULL == tmp_queue) {
-        *queue = NULL;
-        printf("queue memory allocation failed\n");
         return -1;
     }
 
     /*
      * init queue to 0's
      */
-    memset(tmp_queue, 0, sizeof(util_queue_t));
+    memset(queue, 0, sizeof(util_queue_t));
 
     /*
      * init queue with user parameters
      */
-    tmp_queue->max_ele  = max_elements;
-    tmp_queue->flags    = flags;
-    tmp_queue->queue    = malloc(sizeof(uintptr_t) * max_elements);
-    tmp_queue->context  = malloc(sizeof(util_queue_context_t));
-    context = tmp_queue->context;
+    queue->max_ele  = max_elements;
+    queue->flags    = flags;
+    queue->queue    = malloc(sizeof(uintptr_t) * max_elements);
+    queue->context  = malloc(sizeof(util_queue_context_t));
+    context = queue->context;
 
-    if(NULL == tmp_queue->context || NULL == tmp_queue->queue) {
+    if(NULL == queue->context || NULL == queue->queue) {
         printf("queue memory allocation failed\n");
 
-        if (NULL != tmp_queue->queue)
-            free(tmp_queue->queue);
+        if (NULL != queue->queue)
+            free(queue->queue);
 
-        if (NULL != tmp_queue->context)
-            free(tmp_queue->context);
-
-        free(tmp_queue);
+        if (NULL != queue->context)
+            free(queue->context);
 
         status = -1;
     }
@@ -109,7 +57,7 @@ int util_queue_create(util_queue_t **queue, uint32_t max_elements, uint32_t flag
         pthread_mutexattr_destroy(&mutex_attr);
 
         if(0 == status) {
-            if (tmp_queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET) {
+            if (queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET) {
                 pthread_condattr_t cond_attr;
 
                 /*
@@ -125,7 +73,7 @@ int util_queue_create(util_queue_t **queue, uint32_t max_elements, uint32_t flag
                 pthread_condattr_destroy(&cond_attr);
             }
 
-            if (tmp_queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_PUT) {
+            if (queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_PUT) {
                 pthread_condattr_t cond_attr;
 
                 /*
@@ -143,48 +91,42 @@ int util_queue_create(util_queue_t **queue, uint32_t max_elements, uint32_t flag
         }
 
         if (0 == status) {
-            tmp_queue->blockedOnGet = false;
-            tmp_queue->blockedOnPut = false;
-            *queue = tmp_queue;
+            queue->blockedOnGet = false;
+            queue->blockedOnPut = false;
         }
         else {
             pthread_mutex_destroy(&context->lock);
-            free(tmp_queue->context);
-            tmp_queue->context = NULL;
+            free(queue->context);
+            queue->context = NULL;
         }
     }
 
     return status;
 }
 
-int util_queue_delete(util_queue_t **queue)
+int util_queue_destroy(util_queue_t *queue)
 {
     int status = 0;
     util_queue_context_t *context;
-    util_queue_t *tmp_queue;
 
-    if (NULL == queue || NULL == *queue || NULL == (*queue)->context) {
+    if (NULL == queue || NULL == queue->context) {
         return -1;
     }
 
-    context   = (*queue)->context;
-    tmp_queue = *queue;
-
-    (*queue)->context = NULL;
-    *queue = NULL;
+    context = queue->context;
+    queue->context = NULL;
 
     printf("if this hangs, please ensure all application threads have been destroyed\n");
-    if ((tmp_queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET)) {
+    if ((queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET)) {
         pthread_cond_destroy(&(context)->condGet);
     }
 
-    if ((tmp_queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_PUT)) {
+    if ((queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_PUT)) {
         pthread_cond_destroy(&(context)->condPut);
     }
     pthread_mutex_destroy(&context->lock);
 
     free(context);
-    free(tmp_queue);
 
     return status;
 }

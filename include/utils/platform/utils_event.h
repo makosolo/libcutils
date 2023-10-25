@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +27,12 @@ extern "C" {
  * \brief Typedef for a event
  *
  */
-struct util_event_s;
+struct util_event_s {
+    uint16_t        is_set;
+    pthread_mutex_t lock;
+    pthread_cond_t  cond;
+};
+
 typedef struct util_event_s util_event_t;
 
 /*!
@@ -37,7 +43,7 @@ typedef struct util_event_s util_event_t;
  * \return VX_SUCCESS on success
  *
  */
-int util_event_create(util_event_t **event);
+int util_event_create(util_event_t *event);
 
 /*!
  * \brief Delete a event
@@ -47,7 +53,7 @@ int util_event_create(util_event_t **event);
  * \return VX_SUCCESS on success
  *
  */
-int util_event_delete(util_event_t **event);
+int util_event_destroy(util_event_t *event);
 
 /*!
  * \brief Post a event

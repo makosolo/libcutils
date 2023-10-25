@@ -2,73 +2,48 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/time.h>
-#include <pthread.h>
 
 #include "utils_event.h"
 
-struct util_event_s {
-    uint16_t        is_set;
-    pthread_mutex_t lock;
-    pthread_cond_t  cond;
-};
-
-int util_event_create(util_event_t **event)
+int util_event_create(util_event_t *event)
 {
     pthread_mutexattr_t mutex_attr;
     pthread_condattr_t cond_attr;
-    util_event_t *tmp_event = NULL;
     int status = 0;
 
     if (NULL == event) {
         return -1;
     }
 
-    tmp_event = (util_event_t*)malloc(sizeof(util_event_t));
-    if(NULL == tmp_event) {
-        *event = NULL;
-        status = -1;
-        printf("Memory allocation failed\n");
+    status |= pthread_mutexattr_init(&mutex_attr);
+    status |= pthread_condattr_init(&cond_attr);
+
+    status |= pthread_mutex_init(&event->lock, &mutex_attr);
+    status |= pthread_cond_init(&event->cond, &cond_attr);
+
+    event->is_set = 0;
+
+    if(status!=0) {
+        pthread_cond_destroy(&event->cond);
+        pthread_mutex_destroy(&event->lock);
+        printf("Mutex initialization failed\n");
+        status = -2;
     }
-    else {
-        status |= pthread_mutexattr_init(&mutex_attr);
-        status |= pthread_condattr_init(&cond_attr);
 
-        status |= pthread_mutex_init(&tmp_event->lock, &mutex_attr);
-        status |= pthread_cond_init(&tmp_event->cond, &cond_attr);
-
-        tmp_event->is_set = 0;
-
-        if(status!=0) {
-            pthread_cond_destroy(&tmp_event->cond);
-            pthread_mutex_destroy(&tmp_event->lock);
-            free(tmp_event);
-            *event = NULL;
-            printf("Mutex initialization failed\n");
-            status = -2;
-        }
-        else {
-            *event = tmp_event;
-        }
-
-        pthread_condattr_destroy(&cond_attr);
-        pthread_mutexattr_destroy(&mutex_attr);
-    }
+    pthread_condattr_destroy(&cond_attr);
+    pthread_mutexattr_destroy(&mutex_attr);
 
     return status;
 }
 
-int util_event_delete(util_event_t **event)
+int util_event_destroy(util_event_t *event)
 {
-    if(NULL == event || NULL == *event) {
+    if(NULL == event) {
         return -1;
     }
 
-    util_event_t *temp_event = *event;
-    *event = NULL;
-
-    pthread_cond_destroy(&(*event)->cond);
-    pthread_mutex_destroy(&(*event)->lock);
-    free(temp_event);
+    pthread_cond_destroy(&event->cond);
+    pthread_mutex_destroy(&event->lock);
 
     return 0;
 }

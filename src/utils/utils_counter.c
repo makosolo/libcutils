@@ -3,36 +3,32 @@
 
 #include "utils_counter.h"
 
-struct util_counter_s {
-    uint64_t start;
-    uint64_t period;
-    uint64_t delay;
-    bool     started;
-};
-
-util_counter_t *util_counter_create(uint64_t period)
+int util_counter_create(util_counter_t *counter, uint64_t period)
 {
-    util_counter_t *counter = NULL;
-
-    counter = (util_counter_t*)malloc(sizeof(util_counter_t));
-    if (NULL != counter) {
-        counter->start    = 0;
-        counter->delay    = 0;
-        counter->period   = period;
-        counter->started  = false;
+    if (NULL == counter) {
+        return -1;
     }
+    
+    counter->start    = 0;
+    counter->delay    = 0;
+    counter->period   = period;
+    counter->started  = false;
 
-    return counter;
+    return 0;
 }
 
-void util_counter_destroy(util_counter_t *counter)
+int util_counter_destroy(util_counter_t *counter)
 {
-    if (NULL != counter) {
-        util_counter_t *temp = counter;
-
-        counter = NULL;
-        free(temp);
+    if (NULL == counter) {
+        return -1;
     }
+
+    util_counter_t *temp = counter;
+
+    counter = NULL;
+    free(temp);
+
+    return 0;
 }
 
 void util_counter_start(util_counter_t *counter, uint64_t count, uint64_t delay)

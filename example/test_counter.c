@@ -8,14 +8,14 @@
 #include "utils/utils_counter.h"
 
 typedef struct {
-    util_task_t*    task;
+    util_task_t     task;
     uint32_t		stop;
     uint32_t		stop_done;
 } task_obj_t;
 
 typedef struct
 {
-    util_counter_t *counter;
+    util_counter_t counter;
     task_obj_t counter_task;;
 } counter_context_t;
 
@@ -30,35 +30,35 @@ static void app_counter_task(void *app_var)
 
     uint32_t count = time((time_t*)NULL);
 
-    util_counter_start(pObj->counter, count, 3);
-    printf("util_counter_start: count=%d started=%d \n", count, util_counter_started(pObj->counter));
+    util_counter_start(&pObj->counter, count, 3);
+    printf("util_counter_start: count=%d started=%d \n", count, util_counter_started(&pObj->counter));
 
     while(!pObj->counter_task.stop) {
         count = time(0);
 
-        util_counter_start(pObj->counter, count, 10);
-        if (0 == util_counter_remain(pObj->counter, count, false)) {
-            printf("+++util_counter_remain:count=%d started=%d\n", count, util_counter_started(pObj->counter));
-            util_counter_start(pObj->counter, count, 10);
-            printf("---util_counter_remain:count=%d started=%d\n", count, util_counter_started(pObj->counter));
+        util_counter_start(&pObj->counter, count, 10);
+        if (0 == util_counter_remain(&pObj->counter, count, false)) {
+            printf("+++util_counter_remain:count=%d started=%d\n", count, util_counter_started(&pObj->counter));
+            util_counter_start(&pObj->counter, count, 10);
+            printf("---util_counter_remain:count=%d started=%d\n", count, util_counter_started(&pObj->counter));
             break;
         }
     }
 
     count = time(0);
-    util_counter_restart(pObj->counter, count, 0);
-    printf("util_counter_restart: count=%d started=%d \n", count, util_counter_started(pObj->counter));
+    util_counter_restart(&pObj->counter, count, 0);
+    printf("util_counter_restart: count=%d started=%d \n", count, util_counter_started(&pObj->counter));
 
     while(!pObj->counter_task.stop) {
         count = time(0);
 
-        if (0 == util_counter_remain(pObj->counter, count, true)) {
-            printf("util_counter_remain:count=%d started=%d\n", count, util_counter_started(pObj->counter));
+        if (0 == util_counter_remain(&pObj->counter, count, true)) {
+            printf("util_counter_remain:count=%d started=%d\n", count, util_counter_started(&pObj->counter));
             // break;
         }
     }
-    util_counter_stop(pObj->counter);
-    printf("util_counter_remain: started=%d\n", util_counter_started(pObj->counter));
+    util_counter_stop(&pObj->counter);
+    printf("util_counter_remain: started=%d\n", util_counter_started(&pObj->counter));
 
     pObj->counter_task.stop_done = 1;
 }
@@ -77,8 +77,9 @@ void test_counter(void)
 
     signal(SIGINT, app_int_sig_handler);
     
-    util_counter_t *counter = util_counter_create(3);
-    if (NULL == counter) {
+    memset(&g_counter_ctx, 0, sizeof(counter_context_t));
+
+    if (0 != util_counter_create(&g_counter_ctx.counter, 3)) {
         return;
     }
 
@@ -95,17 +96,14 @@ void test_counter(void)
     if (0 == status) {
         g_counter_ctx.counter_task.stop_done = 0;
         g_counter_ctx.counter_task.stop      = 0;
-        g_counter_ctx.counter                = counter;
 
-        if (NULL != g_counter_ctx.counter_task.task) {
-            while (!g_counter_ctx.counter_task.stop_done) {
-                util_task_wait_msecs(100);
-            }
-
-            util_task_delete(&g_counter_ctx.counter_task.task);
+        while (!g_counter_ctx.counter_task.stop_done) {
+            util_task_wait_msecs(100);
         }
+
+        util_task_destroy(&g_counter_ctx.counter_task.task);
     }
 
 
-    util_counter_destroy(counter);
+    util_counter_destroy(&g_counter_ctx.counter);
 }

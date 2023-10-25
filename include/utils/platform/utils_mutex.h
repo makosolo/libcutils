@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +18,10 @@ extern "C" {
  * \brief Typedef for a mutex
  *
  */
+struct util_mutex_s {
+  pthread_mutex_t lock;
+};
+
 typedef struct util_mutex_s util_mutex_t;
 
 /*!
@@ -27,7 +32,7 @@ typedef struct util_mutex_s util_mutex_t;
  * \return VX_SUCCESS on success
  *
  */
-int util_mutex_create(util_mutex_t **mutex);
+int util_mutex_create(util_mutex_t *mutex);
 
 /*!
  * \brief Delete a mutex
@@ -37,7 +42,7 @@ int util_mutex_create(util_mutex_t **mutex);
  * \return VX_SUCCESS on success
  *
  */
-int util_mutex_delete(util_mutex_t **mutex);
+int util_mutex_destroy(util_mutex_t *mutex);
 
 /*!
  * \brief Lock a mutex

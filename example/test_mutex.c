@@ -10,7 +10,7 @@
 
 typedef struct
 {
-    util_task_t*    task;
+    util_task_t     task;
     uint32_t		stop;
     uint32_t		stop_done;
 } task_obj_t;
@@ -21,7 +21,7 @@ typedef struct
     task_obj_t task_2;
     uint32_t   count;
     int        exit;
-    util_mutex_t *mutex;
+    util_mutex_t mutex;
 } mutex_context_t;
 
 mutex_context_t g_mutex_ctx;
@@ -34,9 +34,9 @@ static void app_task_1(void *app_var)
 
     while(!pObj->task_1.stop)
     {
-        util_mutex_lock(pObj->mutex);
+        util_mutex_lock(&pObj->mutex);
         printf("app_task_1[%ld]: count=%d \n", time(0), pObj->count);
-        util_mutex_unlock(pObj->mutex);
+        util_mutex_unlock(&pObj->mutex);
 
         util_task_wait_msecs(100);
     }
@@ -53,7 +53,7 @@ static void app_task_2(void *app_var)
 
     while(!pObj->task_2.stop)
     {
-        util_mutex_lock(pObj->mutex);
+        util_mutex_lock(&pObj->mutex);
         printf("app_task_2[%ld]: count=%d \n", time(0), ++pObj->count);
         util_task_wait_msecs(1000);
         printf("app_task_2[%ld]: count=%d \n", time(0), ++pObj->count);
@@ -61,7 +61,7 @@ static void app_task_2(void *app_var)
         printf("app_task_2[%ld]: count=%d \n", time(0), ++pObj->count);
         util_task_wait_msecs(1000);
         printf("app_task_2[%ld]: count=%d \n", time(0), ++pObj->count);
-        util_mutex_unlock(pObj->mutex);
+        util_mutex_unlock(&pObj->mutex);
 
         util_task_wait_msecs(1000);
     }
@@ -138,12 +138,12 @@ void test_mutex(void)
     while(g_mutex_ctx.task_1.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_mutex_ctx.task_1.task);
+    util_task_destroy(&g_mutex_ctx.task_1.task);
 
     while(g_mutex_ctx.task_2.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_mutex_ctx.task_2.task);
+    util_task_destroy(&g_mutex_ctx.task_2.task);
 
-    util_mutex_delete(&g_mutex_ctx.mutex);
+    util_mutex_destroy(&g_mutex_ctx.mutex);
 }

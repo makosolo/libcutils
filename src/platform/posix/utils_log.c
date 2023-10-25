@@ -39,7 +39,7 @@ typedef struct {
 	uint32_t 			file_count_limit;
 	util_list_t 		list;
 
-	util_mutex_t*       mutex;
+	util_mutex_t        mutex;
 	util_log_level_e    level;
 	bool                is_init;
 	bool                stdout_enabled;
@@ -343,7 +343,7 @@ int util_log_deinit(void)
 		}
 	}
 
-    util_mutex_delete(&pObj->mutex);
+    util_mutex_destroy(&pObj->mutex);
 	util_log_list_clear(&pObj->list);
 
     memset(pObj, 0, sizeof(util_log_context_t));
@@ -355,9 +355,9 @@ int util_log_set_stdout(bool enabled)
 {
 	util_log_context_t *pObj = &g_log_ctx_t;
 
-    util_mutex_lock(pObj->mutex);
+    util_mutex_lock(&pObj->mutex);
     pObj->stdout_enabled  = enabled;
-    util_mutex_unlock(pObj->mutex);
+    util_mutex_unlock(&pObj->mutex);
 
 	return 0;
 }
@@ -366,7 +366,7 @@ int util_log_set_file(const char *path, size_t size, uint32_t count)
 {
 	util_log_context_t *pObj = &g_log_ctx_t;
 
-    util_mutex_lock(pObj->mutex);
+    util_mutex_lock(&pObj->mutex);
 
 	pObj->file_size_limit = size;
 	if (pObj->file_size_limit > UTIL_LOG_FILE_SIZE_MAX) {
@@ -384,7 +384,7 @@ int util_log_set_file(const char *path, size_t size, uint32_t count)
 
 	strncpy(pObj->file_path, path, sizeof(pObj->file_path)-1);
 	if (0 != util_file_mkdirs(pObj->file_path)) {
-		util_mutex_unlock(pObj->mutex);
+		util_mutex_unlock(&pObj->mutex);
 		return -1;
 	}
 
@@ -392,7 +392,7 @@ int util_log_set_file(const char *path, size_t size, uint32_t count)
 
 	util_log_load(pObj);
 
-    util_mutex_unlock(pObj->mutex);
+    util_mutex_unlock(&pObj->mutex);
 
 	return 0;
 }
@@ -401,10 +401,10 @@ int util_log_set_callback(OnUtilLogCallback callback, void *arg)
 {
 	util_log_context_t *pObj = &g_log_ctx_t;
 
-    util_mutex_lock(pObj->mutex);
+    util_mutex_lock(&pObj->mutex);
 	pObj->onLogCallback   = callback;
 	pObj->arg             = arg;
-    util_mutex_unlock(pObj->mutex);
+    util_mutex_unlock(&pObj->mutex);
 
 	return 0;
 }
@@ -413,9 +413,9 @@ int util_log_set_level(util_log_level_e level)
 {
 	util_log_context_t *pObj = &g_log_ctx_t;
 
-    util_mutex_lock(pObj->mutex);
+    util_mutex_lock(&pObj->mutex);
     pObj->level = level;
-    util_mutex_unlock(pObj->mutex);
+    util_mutex_unlock(&pObj->mutex);
 
 	return 0;
 }
@@ -426,10 +426,10 @@ int util_log_log(util_log_level_e level, const char *file, int line, const char 
     va_list va;
     int result = 0;
 
-    util_mutex_lock(pObj->mutex);
+    util_mutex_lock(&pObj->mutex);
 
 	if (level >= UTIL_LOG_OFF || level < pObj->level) {
-		util_mutex_unlock(pObj->mutex);
+		util_mutex_unlock(&pObj->mutex);
 		return 0;
 	}
 
@@ -451,7 +451,7 @@ int util_log_log(util_log_level_e level, const char *file, int line, const char 
 		va_end(va);
 	}
 
-    util_mutex_unlock(pObj->mutex);
+    util_mutex_unlock(&pObj->mutex);
 
     return result;
 }

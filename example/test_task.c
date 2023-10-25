@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    util_task_t*    task;
+    util_task_t     task;
     uint32_t		stop;
     uint32_t		stop_done;
 } task_context_t;
@@ -75,5 +75,5 @@ void test_task(void)
     while(g_task_ctx.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_task_ctx.task);
+    util_task_destroy(&g_task_ctx.task);
 }

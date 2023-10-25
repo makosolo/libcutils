@@ -81,7 +81,7 @@
 		return t ? &t[1] : NULL;                                               	\
 	}                                                                          	\
                                                                                	\
-	bool util_map_init_##name(struct util_map_##name *m, uint32_t cap,         	\
+	bool util_map_create_##name(struct util_map_##name *m, uint32_t cap,         	\
 				uint32_t load_fac)                             				   	\
 	{                                                                      	   	\
 		void *t;                                                       		   	\

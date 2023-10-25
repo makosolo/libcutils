@@ -1,6 +1,7 @@
 #ifndef H_UTILS_CYCBUF_H
 #define H_UTILS_CYCBUF_H
 
+#include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -8,11 +9,17 @@
 extern "C" {
 #endif
 
-struct util_cycbuf_s;
+struct util_cycbuf_s {
+    uint8_t* buffer;  /* buffer pointer */
+    int      size;    /* buffer size */
+    int      w_pos;   /* write pos */
+    int      r_pos;   /* read pos */
+};
+
 typedef struct util_cycbuf_s util_cycbuf_t;
 
-int     util_cycbuf_create(util_cycbuf_t** cycbuf, uint32_t max_size);
-int     util_cycbuf_delete(util_cycbuf_t** cycbuf);
+int     util_cycbuf_create(util_cycbuf_t* cycbuf, uint32_t max_size);
+int     util_cycbuf_destroy(util_cycbuf_t* cycbuf);
 int     util_cycbuf_size(util_cycbuf_t* cycbuf);
 int     util_cycbuf_push(util_cycbuf_t* cycbuf, void* data, uint32_t len);
 int     util_cycbuf_pop(util_cycbuf_t* cycbuf, void* buf, uint32_t len);

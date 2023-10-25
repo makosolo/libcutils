@@ -6,13 +6,6 @@
 
 #include "utils_cycbuf.h"
 
-struct util_cycbuf_s {
-    uint8_t* buffer;  /* buffer pointer */
-    int      size;    /* buffer size */
-    int      w_pos;   /* write pos */
-    int      r_pos;   /* read pos */
-};
-
 static uint32_t cycbuf_size(util_cycbuf_t* cycbuf)
 {
     uint32_t size = 0;
@@ -97,44 +90,42 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
     }
 }
 
-int util_cycbuf_create(util_cycbuf_t** cycbuf, uint32_t max_size)
+int util_cycbuf_create(util_cycbuf_t* cycbuf, uint32_t max_size)
 {
-    util_cycbuf_t *temp_cycbuf = NULL;
+    uint8_t *temp_buf = NULL;
     int status = 0;
 
     if (NULL == cycbuf || 0 == max_size) {
         return -1;
     }
 
-    temp_cycbuf = (util_cycbuf_t*)malloc(sizeof(util_cycbuf_t) + max_size);
-    if (NULL != temp_cycbuf) {
-        temp_cycbuf->buffer  = (uint8_t*)cycbuf + sizeof(util_cycbuf_t);
-        temp_cycbuf->size    = max_size;
-        temp_cycbuf->r_pos   = -1;
-        temp_cycbuf->w_pos   = -1;
-        *cycbuf = temp_cycbuf;
+    temp_buf = (uint8_t*)malloc(max_size);
+    if (NULL != temp_buf) {
+        cycbuf->buffer  = temp_buf;
+        cycbuf->size    = max_size;
+        cycbuf->r_pos   = -1;
+        cycbuf->w_pos   = -1;
     }
     else {
         status  = -1;
-        *cycbuf = NULL;
         printf("cycbuf memory allocation failed\n");
     }
 
     return status;
 }
 
-int util_cycbuf_delete(util_cycbuf_t** cycbuf)
+int util_cycbuf_destroy(util_cycbuf_t* cycbuf)
 {
-    util_cycbuf_t *temp_cycbuf = NULL;
+    uint8_t *temp_buf = NULL;
 
-    if (NULL == cycbuf || NULL == *cycbuf) {
+    if (NULL == cycbuf) {
         return -1;
     }
 
-    temp_cycbuf = *cycbuf;
-    *cycbuf = NULL;
+    temp_buf = cycbuf->buffer;
+    cycbuf->buffer = NULL;
 
-    free(temp_cycbuf);
+    free(temp_buf);
 
     return 0;
 }

@@ -15,7 +15,7 @@ void test_map(void)
         const char *key, *value;
         struct util_map_str map;
 
-        UTIL_ASSERT_RET(util_map_init_str(&map, 0, 0), "util_map_init_str fail!");
+        UTIL_ASSERT_RET(util_map_create_str(&map, 0, 0), "util_map_init_str fail!");
 
         UTIL_ASSERT_RET(0 == util_map_put_str(&map, "jack", "chicago"), "util_map_put_str fail!");
         UTIL_ASSERT_RET(0 == util_map_put_str(&map, "jane", "new york"), "util_map_put_str fail!");
@@ -33,7 +33,7 @@ void test_map(void)
         const char *value;
         struct util_map_64s map;
 
-        UTIL_ASSERT_RET(util_map_init_64s(&map, 0, 0), "util_map_init_str fail!");
+        UTIL_ASSERT_RET(util_map_create_64s(&map, 0, 0), "util_map_init_str fail!");
 
         UTIL_ASSERT_RET(0 == util_map_put_64s(&map, 100, "chicago"), "util_map_put_64s fail!");
         UTIL_ASSERT_RET(0 == util_map_put_64s(&map, 200, "new york"), "util_map_put_64s fail!");

@@ -10,7 +10,7 @@
 
 typedef struct
 {
-    util_task_t*    task;
+    util_task_t     task;
     uint32_t		stop;
     uint32_t		stop_done;
 } task_obj_t;
@@ -20,7 +20,7 @@ typedef struct
     task_obj_t task_1;
     task_obj_t task_2;
     int        exit;
-    util_queue_t *queue;
+    util_queue_t queue;
 } queue_context_t;
 
 queue_context_t g_queue_ctx;
@@ -37,10 +37,10 @@ static void app_task_1(void *app_var)
 
     while(!pObj->task_1.stop)
     {
-        if (util_queue_isempty(pObj->queue)) {
+        if (util_queue_isempty(&pObj->queue)) {
             printf("util_queue_isempty \n");
         }
-        else if (0 == util_queue_pop(pObj->queue, (uintptr_t*)&data, 100)) {
+        else if (0 == util_queue_pop(&pObj->queue, (uintptr_t*)&data, 100)) {
             printf("app_task_1[%ld]: data=%d \n", time(0), *data);
             continue;
         }
@@ -66,15 +66,15 @@ static void app_task_2(void *app_var)
 
     while(!pObj->task_2.stop)
     {
-        if (0 != util_queue_put(pObj->queue, (uintptr_t)&g_data[index%4], 1000)) {
+        if (0 != util_queue_put(&pObj->queue, (uintptr_t)&g_data[index%4], 1000)) {
             printf("util_queue_put fail\n");
             continue;
         }
-        else if (0 == util_queue_peek(pObj->queue, (uintptr_t*)&data)) {
+        else if (0 == util_queue_peek(&pObj->queue, (uintptr_t*)&data)) {
             printf("app_task_2[%ld]: data=%d \n", time(0), *data);
         }
         else {
-            printf("util_queue_peek fail, isempty=%d \n", util_queue_isempty(pObj->queue));
+            printf("util_queue_peek fail, isempty=%d \n", util_queue_isempty(&pObj->queue));
         }
         index++;
 
@@ -153,12 +153,12 @@ void test_queue(void)
     while(g_queue_ctx.task_1.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_queue_ctx.task_1.task);
+    util_task_destroy(&g_queue_ctx.task_1.task);
 
     while(g_queue_ctx.task_2.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_queue_ctx.task_2.task);
+    util_task_destroy(&g_queue_ctx.task_2.task);
 
-    util_queue_delete(&g_queue_ctx.queue);
+    util_queue_destroy(&g_queue_ctx.queue);
 }

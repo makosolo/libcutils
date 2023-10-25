@@ -1,60 +1,37 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <pthread.h>
 
 #include "utils_mutex.h"
 
-struct util_mutex_s {
-  pthread_mutex_t lock;
-};
-
-int util_mutex_create(util_mutex_t **mutex)
+int util_mutex_create(util_mutex_t *mutex)
 {
     int status = 0;
     pthread_mutexattr_t mutex_attr;
-    util_mutex_t *tmp_mutex;
 
     if (NULL == mutex) {
         return -1;
     }
 
-    tmp_mutex = (util_mutex_t*)malloc(sizeof(util_mutex_t));
-    if(tmp_mutex==NULL) {
-        *mutex = NULL;
-        printf("Mutex memory allocation failed\n");
+    status |= pthread_mutexattr_init(&mutex_attr);
+    status |= pthread_mutex_init(&mutex->lock, &mutex_attr);
+
+    if(status!=0) {
+        pthread_mutex_destroy(&mutex->lock);
+        printf("Mutex initialization failed\n");
         status = -1;
     }
-    else {
-        status |= pthread_mutexattr_init(&mutex_attr);
-        status |= pthread_mutex_init(&tmp_mutex->lock, &mutex_attr);
-
-        if(status!=0) {
-            pthread_mutex_destroy(&tmp_mutex->lock);
-            free(tmp_mutex);
-            *mutex = NULL;
-            printf("Mutex initialization failed\n");
-            status = -1;
-        }
-        else {
-            *mutex = tmp_mutex;
-        }
-        pthread_mutexattr_destroy(&mutex_attr);
-    }
+    pthread_mutexattr_destroy(&mutex_attr);
 
     return status;
 }
 
-int util_mutex_delete(util_mutex_t **mutex)
+int util_mutex_destroy(util_mutex_t *mutex)
 {
-    if(NULL == mutex || NULL == *mutex) {
+    if(NULL == mutex) {
         return -1;
     }
 
-    util_mutex_t *temp_mutex = *mutex;
-    *mutex = NULL;
-
-    pthread_mutex_destroy(&(temp_mutex)->lock);
-    free(temp_mutex);
+    pthread_mutex_destroy(&mutex->lock);
 
     return 0;
 }

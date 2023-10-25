@@ -10,7 +10,7 @@
 
 typedef struct
 {
-    util_task_t*    task;
+    util_task_t     task;
     uint32_t		stop;
     uint32_t		stop_done;
 } task_obj_t;
@@ -20,7 +20,7 @@ typedef struct
     task_obj_t task_1;
     task_obj_t task_2;
     int        exit;
-    util_event_t *event;
+    util_event_t event;
 } event_context_t;
 
 event_context_t g_event_ctx;
@@ -33,7 +33,7 @@ static void app_task_1(void *app_var)
 
     while(!pObj->task_1.stop)
     {
-        if (0 == util_event_wait(pObj->event, 200)) {
+        if (0 == util_event_wait(&pObj->event, 200)) {
             printf("app_task_1[%ld] \n", time(0));
         }
     }
@@ -51,7 +51,7 @@ static void app_task_2(void *app_var)
     while(!pObj->task_2.stop)
     {
         printf("app_task_2[%ld] \n", time(0));
-        util_event_post(pObj->event);
+        util_event_post(&pObj->event);
         util_task_wait_msecs(1000);
     }
 
@@ -127,12 +127,12 @@ void test_event(void)
     while(g_event_ctx.task_1.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_event_ctx.task_1.task);
+    util_task_destroy(&g_event_ctx.task_1.task);
 
     while(g_event_ctx.task_2.stop_done == 0) {
         util_task_wait_msecs(1000);
     }
-    util_task_delete(&g_event_ctx.task_2.task);
+    util_task_destroy(&g_event_ctx.task_2.task);
 
-    util_event_delete(&g_event_ctx.event);
+    util_event_destroy(&g_event_ctx.event);
 }
