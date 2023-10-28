@@ -43,7 +43,8 @@ set(SRC_DIR
     test_queue.c
     test_timer.c
     test_log.c
-    test_map.c)
+    test_map.c
+    test_array.c)
 
 #头文件
 include_directories(../include/utils)
