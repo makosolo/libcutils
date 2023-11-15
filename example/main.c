@@ -20,6 +20,7 @@ extern void test_queue(void);
 extern void test_log(void);
 extern void test_map(void);
 extern void test_array(void);
+extern void test_heap(void);
 
 typedef struct
 {
@@ -73,6 +74,7 @@ int main(int argc, const char *argv[])
     case 9: test_log(); break;
     case 10: test_map(); break;
     case 11: test_array(); break;
+    case 12: test_heap(); break;
     default: break;
     }
 

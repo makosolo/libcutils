@@ -36,6 +36,7 @@ set(SRC_DIR
     test_cycbuf.c
     test_list.c
     test_rbtree.c
+    test_heap.c
     test_string.c
     test_task.c
     test_mutex.c
