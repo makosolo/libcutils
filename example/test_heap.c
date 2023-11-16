@@ -21,8 +21,8 @@ void test_heap(void)
         UTIL_ASSERT_RET(result == 0, "util_heap_create fail, result=%d", result);
 
         for (int i = 0; i < 10; i++) {
-            result = util_heap_push(&heap, arr[i], &arr[i]);
-            UTIL_ASSERT_RET(result == 0, "util_heap_push fail, result=%d", result);
+            result = util_heap_put(&heap, arr[i], &arr[i]);
+            UTIL_ASSERT_RET(result == 0, "util_heap_put fail, result=%d", result);
         }
 
         for (int i = 0; i < 10; i++) {

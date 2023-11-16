@@ -70,7 +70,7 @@ int util_heap_clear(util_heap_t *heap)
     return 0;
 }
 
-int util_heap_push(util_heap_t *heap, int64_t key, void *data)
+int util_heap_put(util_heap_t *heap, int64_t key, void *data)
 {
 	size_t i, cap, m;
 	void *exp;

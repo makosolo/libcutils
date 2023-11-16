@@ -55,7 +55,7 @@ int util_heap_clear(util_heap_t *heap);
  * @param data data
  * @return     'false' on out of memory.
  */
-int util_heap_push(util_heap_t *heap, int64_t key, void *data);
+int util_heap_put(util_heap_t *heap, int64_t key, void *data);
 
 /**
  * Read top element without removing from the heap.
@@ -79,4 +79,4 @@ util_heap_data_t *util_heap_pop(util_heap_t *heap);
 }
 #endif
 
-#endif // H_UTILS_CYC_BUFFER_H
+#endif // H_UTILS_HEAP_H
