@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <time.h>
 
+#include "utils_comm.h"
+
 extern void test_counter(void);
 extern void test_cycbuf(void);
 extern void test_list(void);
@@ -59,6 +61,8 @@ int main(int argc, const char *argv[])
     signal(SIGINT, app_int_sig_handler);
 
     memset(&g_test_ctx, 0, sizeof(test_context_t));
+
+    printf("version:%s \n", util_get_version());
 
     switch (mode) {
     case 0: test_list(); break;

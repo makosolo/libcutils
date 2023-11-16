@@ -31,6 +31,7 @@ else()
 endif()
 
 set(SRC_DIR
+    src/utils_comm.c
     src/container/utils_list.c
     src/container/utils_cycqueue.c
     src/container/utils_cycbuf.c
@@ -53,6 +54,7 @@ set(SRC_DIR
 include_directories(
                     .
                     src
+                    include/utils
                     include/utils/container
                     include/utils/string
                     include/utils/utils
