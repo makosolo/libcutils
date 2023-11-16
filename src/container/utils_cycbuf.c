@@ -90,7 +90,7 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
     }
 }
 
-int util_cycbuf_create(util_cycbuf_t* cycbuf, uint32_t max_size)
+int util_cycbuf_create(util_cycbuf_t* cycbuf, uint32_t max_size, uintptr_t *buf_memory)
 {
     uint8_t *temp_buf = NULL;
     int status = 0;
@@ -99,7 +99,15 @@ int util_cycbuf_create(util_cycbuf_t* cycbuf, uint32_t max_size)
         return -1;
     }
 
-    temp_buf = (uint8_t*)malloc(max_size);
+    if (NULL == buf_memory) {
+        cycbuf->flag = 0;
+        temp_buf = (uint8_t*)malloc(max_size);
+    }
+    else {
+        cycbuf->flag = 1;
+        temp_buf = (uint8_t*)buf_memory;
+    }
+    
     if (NULL != temp_buf) {
         cycbuf->buffer  = temp_buf;
         cycbuf->size    = max_size;
@@ -125,7 +133,9 @@ int util_cycbuf_destroy(util_cycbuf_t* cycbuf)
     temp_buf = cycbuf->buffer;
     cycbuf->buffer = NULL;
 
-    free(temp_buf);
+    if (0 == cycbuf->flag) {
+        free(temp_buf);
+    }
 
     return 0;
 }

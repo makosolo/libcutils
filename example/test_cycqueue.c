@@ -121,7 +121,7 @@ void test_cycqueue(void)
     g_queue_ctx.exit = 0;
 
     /* create queue */
-    status = util_cycqueue_create(&g_queue_ctx.queue, 4);
+    status = util_cycqueue_create(&g_queue_ctx.queue, 4, NULL);
     if (0 != status) {
         return;
     }

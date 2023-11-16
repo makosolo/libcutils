@@ -106,7 +106,7 @@ void test_queue(void)
     g_queue_ctx.exit = 0;
 
     /* create queue */
-    status = util_queue_create(&g_queue_ctx.queue, 4, UTIL_QUEUE_FLAG_BLOCK_ON_PUT|UTIL_QUEUE_FLAG_BLOCK_ON_GET);
+    status = util_queue_create(&g_queue_ctx.queue, 4, NULL, UTIL_QUEUE_FLAG_BLOCK_ON_PUT|UTIL_QUEUE_FLAG_BLOCK_ON_GET);
     if (0 != status) {
         return;
     }

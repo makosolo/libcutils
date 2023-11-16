@@ -89,7 +89,7 @@ struct util_queue_s {
 
 typedef struct util_queue_s util_queue_t;
 
-int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags);
+int util_queue_create(util_queue_t *queue, uint32_t max_elements, uintptr_t *queue_memory, uint32_t flags);
 int util_queue_destroy(util_queue_t *queue);
 int util_queue_put(util_queue_t *queue, uintptr_t data, uint32_t timeout);
 int util_queue_pop(util_queue_t *queue, uintptr_t *data, uint32_t timeout);

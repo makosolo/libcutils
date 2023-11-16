@@ -6,7 +6,7 @@
 
 #include "utils_cycqueue.h"
 
-int util_cycqueue_create(util_cycqueue_t *queue, uint32_t max_elements)
+int util_cycqueue_create(util_cycqueue_t *queue, uint32_t max_elements, uintptr_t *queue_memory)
 {
     if (NULL == queue || 0U == max_elements) {
         return -1;
@@ -21,7 +21,14 @@ int util_cycqueue_create(util_cycqueue_t *queue, uint32_t max_elements)
      * init queue with user parameters
      */
     queue->max_ele  = max_elements;
-    queue->queue    = malloc(sizeof(uintptr_t) * max_elements);
+    if (NULL == queue_memory) {
+        queue->flag  = 0;
+        queue->queue = malloc(sizeof(uintptr_t) * max_elements);
+    }
+    else {
+        queue->flag  = 1;
+        queue->queue = queue_memory;
+    }
 
     if(NULL == queue->queue) {
         return -2;
@@ -41,7 +48,9 @@ int util_cycqueue_destroy(util_cycqueue_t *queue)
     tmp_queue = queue->queue;
     queue->queue = NULL;
 
-    free(tmp_queue);
+    if (0 == queue->flag) {
+        free(tmp_queue);
+    }
 
     return 0;
 }

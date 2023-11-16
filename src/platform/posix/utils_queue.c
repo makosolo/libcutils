@@ -11,9 +11,10 @@ typedef struct util_queue_context_s {
     pthread_mutex_t lock;
     pthread_cond_t  condGet;
     pthread_cond_t  condPut;
+    uint32_t        flag;
 } util_queue_context_t;
 
-int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags)
+int util_queue_create(util_queue_t *queue, uint32_t max_elements, uintptr_t *queue_memory, uint32_t flags)
 {
     int status = 0;
     util_queue_context_t *context = NULL;
@@ -32,8 +33,15 @@ int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags
      */
     queue->max_ele  = max_elements;
     queue->flags    = flags;
-    queue->queue    = malloc(sizeof(uintptr_t) * max_elements);
     queue->context  = malloc(sizeof(util_queue_context_t));
+
+    if (NULL == queue_memory) {
+        queue->queue = malloc(sizeof(uintptr_t) * max_elements);
+    }
+    else {
+        queue->queue = queue_memory;
+    }
+
     context = queue->context;
 
     if(NULL == queue->context || NULL == queue->queue) {
@@ -42,7 +50,7 @@ int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags
         if (NULL != queue->queue)
             free(queue->queue);
 
-        if (NULL != queue->context)
+        if (NULL != queue->context && NULL == queue_memory)
             free(queue->context);
 
         status = -1;
@@ -55,6 +63,8 @@ int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags
         status |= pthread_mutex_init(&context->lock, &mutex_attr);
 
         pthread_mutexattr_destroy(&mutex_attr);
+
+        context->flag = NULL == queue_memory? 0: 1;
 
         if(0 == status) {
             if (queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET) {
@@ -96,7 +106,11 @@ int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags
         }
         else {
             pthread_mutex_destroy(&context->lock);
-            free(queue->queue);
+
+            if (NULL == queue_memory) {
+                free(queue->queue);
+            }
+            
             free(queue->context);
             queue->context = NULL;
         }
@@ -131,8 +145,11 @@ int util_queue_destroy(util_queue_t *queue)
     }
     pthread_mutex_destroy(&tmp_context->lock);
 
+    if (0 == tmp_context->flag) {
+       free(tmp_queue); 
+    }
+
     free(tmp_context);
-    free(tmp_queue);
 
     return status;
 }

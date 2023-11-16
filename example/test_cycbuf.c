@@ -11,7 +11,7 @@ void test_cycbuf(void)
 {
     util_cycbuf_t cycbuf;
 
-    if (0 != util_cycbuf_create(&cycbuf, 32)) {
+    if (0 != util_cycbuf_create(&cycbuf, 32, NULL)) {
         printf("util_cycbuf_create fail\n");
         return;
     }

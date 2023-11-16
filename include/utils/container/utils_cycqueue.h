@@ -13,6 +13,7 @@ extern "C" {
  *
  */
 struct util_cycqueue_s {
+  uint32_t  flag;
   uint32_t  cur_rd;
   uint32_t  cur_wr;
   uint32_t  count;
@@ -22,7 +23,7 @@ struct util_cycqueue_s {
 
 typedef struct util_cycqueue_s util_cycqueue_t;
 
-int util_cycqueue_create(util_cycqueue_t *queue, uint32_t max_elements);
+int util_cycqueue_create(util_cycqueue_t *queue, uint32_t max_elements, uintptr_t *queue_memory);
 int util_cycqueue_destroy(util_cycqueue_t *queue);
 int util_cycqueue_put(util_cycqueue_t *queue, uintptr_t data);
 int util_cycqueue_pop(util_cycqueue_t *queue, uintptr_t *data);
