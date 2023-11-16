@@ -11,7 +11,6 @@ extern void test_counter(void);
 extern void test_cycbuf(void);
 extern void test_list(void);
 extern void test_cycqueue(void);
-// extern void test_rbtree(void);
 extern void test_string(void);
 extern void test_task(void);
 extern void test_mutex(void);
@@ -65,7 +64,7 @@ int main(int argc, const char *argv[])
     case 0: test_list(); break;
     case 1: test_cycbuf(); break;
     case 2: test_string(); break;
-    // case 3: test_rbtree(); break;
+    case 3: test_cycqueue(); break;
     case 4: test_counter(); break;
     case 5: test_task(); break;
     case 6: test_mutex(); break;
@@ -75,7 +74,6 @@ int main(int argc, const char *argv[])
     case 10: test_map(); break;
     case 11: test_array(); break;
     case 12: test_heap(); break;
-    case 13: test_cycqueue(); break;
     default: break;
     }
 
