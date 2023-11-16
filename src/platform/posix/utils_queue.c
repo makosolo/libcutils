@@ -96,6 +96,7 @@ int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags
         }
         else {
             pthread_mutex_destroy(&context->lock);
+            free(queue->queue);
             free(queue->context);
             queue->context = NULL;
         }
@@ -107,26 +108,31 @@ int util_queue_create(util_queue_t *queue, uint32_t max_elements, uint32_t flags
 int util_queue_destroy(util_queue_t *queue)
 {
     int status = 0;
-    util_queue_context_t *context;
+    util_queue_context_t *tmp_context;
+    uintptr_t *tmp_queue;
 
     if (NULL == queue || NULL == queue->context) {
         return -1;
     }
 
-    context = queue->context;
+    tmp_context = queue->context;
     queue->context = NULL;
+
+    tmp_queue = queue->queue;
+    queue->queue = NULL;
 
     printf("if this hangs, please ensure all application threads have been destroyed\n");
     if ((queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_GET)) {
-        pthread_cond_destroy(&(context)->condGet);
+        pthread_cond_destroy(&(tmp_context)->condGet);
     }
 
     if ((queue->flags & UTIL_QUEUE_FLAG_BLOCK_ON_PUT)) {
-        pthread_cond_destroy(&(context)->condPut);
+        pthread_cond_destroy(&(tmp_context)->condPut);
     }
-    pthread_mutex_destroy(&context->lock);
+    pthread_mutex_destroy(&tmp_context->lock);
 
-    free(context);
+    free(tmp_context);
+    free(tmp_queue);
 
     return status;
 }
