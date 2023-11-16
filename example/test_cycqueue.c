@@ -6,7 +6,8 @@
 #include <signal.h>
 
 #include "platform/utils_task.h"
-#include "platform/utils_queue.h"
+#include "platform/utils_mutex.h"
+#include "container/utils_cycqueue.h"
 
 typedef struct
 {
@@ -20,7 +21,8 @@ typedef struct
     task_obj_t task_1;
     task_obj_t task_2;
     int        exit;
-    util_queue_t queue;
+    util_cycqueue_t queue;
+    util_mutex_t mutex;
 } queue_context_t;
 
 static queue_context_t g_queue_ctx;
@@ -37,18 +39,21 @@ static void app_task_1(void *app_var)
 
     while(!pObj->task_1.stop)
     {
-        if (util_queue_isempty(&pObj->queue)) {
-            printf("util_queue_isempty \n");
+        util_mutex_lock(&pObj->mutex);
+        if (util_cycqueue_isempty(&pObj->queue)) {
+            util_mutex_unlock(&pObj->mutex);
+            printf("util_cycqueue_isempty \n");
         }
-        else if (0 == util_queue_pop(&pObj->queue, (uintptr_t*)&data, 100)) {
+        else if (0 == util_cycqueue_pop(&pObj->queue, (uintptr_t*)&data)) {
+            util_mutex_unlock(&pObj->mutex);
             printf("app_task_1[%ld]: data=%d \n", time(0), *data);
-            continue;
         }
         else {
-            printf("util_queue_pop fail \n");
+            util_mutex_unlock(&pObj->mutex);
+            printf("util_cycqueue_pop fail \n");
         }
 
-        util_task_wait_msecs(1000);
+        util_task_wait_msecs(500);
     }
 
     printf("app_task_1 leave... \n");
@@ -58,7 +63,8 @@ static void app_task_1(void *app_var)
 static void app_task_2(void *app_var)
 {
     queue_context_t *pObj = (queue_context_t *)app_var;
-    int index = 0; 
+    int index = 0;
+    int status = 0;
 
     printf("app_task_2... \n");
 
@@ -66,19 +72,28 @@ static void app_task_2(void *app_var)
 
     while(!pObj->task_2.stop)
     {
-        if (0 != util_queue_put(&pObj->queue, (uintptr_t)&g_data[index%4], 1000)) {
-            printf("util_queue_put fail\n");
-            continue;
-        }
-        else if (0 == util_queue_peek(&pObj->queue, (uintptr_t*)&data)) {
-            printf("app_task_2[%ld]: data=%d \n", time(0), *data);
+        util_mutex_lock(&pObj->mutex);
+        status = util_cycqueue_put(&pObj->queue, (uintptr_t)&g_data[index%4]);
+        util_mutex_unlock(&pObj->mutex);
+
+        if (0 != status) {
+            printf("util_cycqueue_put fail, status=%d \n", status);
         }
         else {
-            printf("util_queue_peek fail, isempty=%d \n", util_queue_isempty(&pObj->queue));
-        }
-        index++;
+            util_mutex_lock(&pObj->mutex);
+            status = util_cycqueue_peek(&pObj->queue, (uintptr_t*)&data);
+            util_mutex_unlock(&pObj->mutex);
 
-        util_task_wait_msecs(100);
+            if (0 == status) {
+                printf("app_task_2[%ld]: data=%d \n", time(0), *data);
+            }
+            else {
+                printf("util_cycqueue_peek fail, status=%d \n", status);
+            }
+            index++;
+        }
+
+        util_task_wait_msecs(1000);
     }
 
     printf("app_task_2 leave... \n");
@@ -95,7 +110,7 @@ static void app_int_sig_handler(int sig)
     // exit(0);
 }
 
-void test_queue(void)
+void test_cycqueue(void)
 {
     int status = 0;
 
@@ -106,7 +121,7 @@ void test_queue(void)
     g_queue_ctx.exit = 0;
 
     /* create queue */
-    status = util_queue_create(&g_queue_ctx.queue, 4, UTIL_QUEUE_FLAG_BLOCK_ON_PUT|UTIL_QUEUE_FLAG_BLOCK_ON_GET);
+    status = util_cycqueue_create(&g_queue_ctx.queue, 4);
     if (0 != status) {
         return;
     }
@@ -142,8 +157,14 @@ void test_queue(void)
     if (0 != status) {
         return;
     }
+
     g_queue_ctx.task_2.stop_done = 0;
     g_queue_ctx.task_2.stop      = 0;
+
+    status = util_mutex_create(&g_queue_ctx.mutex);
+    if (0 != status) {
+        return;
+    }
 
     while (!g_queue_ctx.exit) {
         util_task_wait_msecs(100);
@@ -160,5 +181,7 @@ void test_queue(void)
     }
     util_task_destroy(&g_queue_ctx.task_2.task);
 
-    util_queue_destroy(&g_queue_ctx.queue);
+    util_cycqueue_destroy(&g_queue_ctx.queue);
+
+    util_mutex_destroy(&g_queue_ctx.mutex);
 }

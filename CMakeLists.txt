@@ -32,9 +32,9 @@ endif()
 
 set(SRC_DIR
     src/container/utils_list.c
-    # src/container/utils_queue.c
+    src/container/utils_cycqueue.c
     src/container/utils_cycbuf.c
-    src/container/utils_rbtree.c
+    # src/container/utils_rbtree.c
     src/container/utils_map.c
     src/container/utils_array.c
     src/container/utils_heap.c
