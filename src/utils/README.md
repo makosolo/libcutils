@@ -1,6 +1,6 @@
 - [x] counter
 - [ ] base64
 - [ ] base32
-- [ ] bits
+- [x] bits
 - [ ] url
 - [x] assert
