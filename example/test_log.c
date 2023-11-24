@@ -43,7 +43,7 @@ void test_log(void)
 
     UTIL_ASSERT_RET(0 == util_log_init("UTIL_LOG"), "util_log_init fail!\n");
     UTIL_ASSERT_RET(0 == util_log_set_stdout(true), "util_log_set_stdout fail!\n");
-    UTIL_ASSERT_RET(0 == util_log_set_file("/tmp/test/", 1024, 5), "util_log_set_file fail!\n");
+    UTIL_ASSERT_RET(0 == util_log_set_file("/tmp/test/", 10240, 5), "util_log_set_file fail!\n");
     UTIL_ASSERT_RET(0 == util_log_set_callback(OnLogPrint, NULL), "util_log_set_callback fail!\n");
     UTIL_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_OFF), "util_log_set_level fail!\n");
 
@@ -66,7 +66,7 @@ void test_log(void)
             UTIL_LOG_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_WARN), "util_log_set_level fail!\n");
         }
         else if (run_count >= 10) {
-            UTIL_LOG_ASSERT_RET(0 != util_log_set_level(UTIL_LOG_ERROR), "util_log_set_level fail!\n");
+            UTIL_LOG_ASSERT_RET(0 == util_log_set_level(UTIL_LOG_ERROR), "util_log_set_level fail!\n");
         }
 
         run_count++;

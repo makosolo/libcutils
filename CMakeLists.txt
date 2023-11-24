@@ -48,6 +48,7 @@ set(SRC_DIR
     src/platform/posix/utils_file.c
     src/platform/posix/utils_log.c
     src/utils/utils_counter.c
+    src/utils/utils_bitops.c
     )
 
 #头文件

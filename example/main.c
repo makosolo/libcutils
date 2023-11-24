@@ -22,6 +22,7 @@ extern void test_log(void);
 extern void test_map(void);
 extern void test_array(void);
 extern void test_heap(void);
+extern void test_bitops(void);
 
 typedef struct
 {
@@ -78,6 +79,7 @@ int main(int argc, const char *argv[])
     case 10: test_map(); break;
     case 11: test_array(); break;
     case 12: test_heap(); break;
+    case 13: test_bitops(); break;
     default: break;
     }
 
