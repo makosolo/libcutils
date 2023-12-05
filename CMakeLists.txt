@@ -40,7 +40,6 @@ set(SRC_DIR
     src/container/utils_array.c
     src/container/utils_heap.c
     src/string/utils_string.c
-    # src/platform/posix/utils_timer.c
     src/platform/posix/utils_task.c
     src/platform/posix/utils_mutex.c
     src/platform/posix/utils_event.c
@@ -49,6 +48,7 @@ set(SRC_DIR
     src/platform/posix/utils_log.c
     src/utils/utils_counter.c
     src/utils/utils_bitops.c
+    src/utils/utils_timer.c
     )
 
 #头文件

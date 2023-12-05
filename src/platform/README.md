@@ -6,7 +6,6 @@
 | thread | ok | | |
 | thread pool | | | |
 | time | | | |
-| timer | | | |
 | file | | | |
 | atomic | | | |
 | socket | | | |

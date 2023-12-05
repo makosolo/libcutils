@@ -23,6 +23,7 @@ extern void test_map(void);
 extern void test_array(void);
 extern void test_heap(void);
 extern void test_bitops(void);
+extern void test_timer(void);
 
 typedef struct
 {
@@ -80,12 +81,13 @@ int main(int argc, const char *argv[])
     case 11: test_array(); break;
     case 12: test_heap(); break;
     case 13: test_bitops(); break;
+    case 14: test_timer(); break;
     default: break;
     }
 
-    // while (!g_test_ctx.exit) {
-    //     sleep(100);
-    // }
+    while (!g_test_ctx.exit) {
+        usleep(1 * 1000);
+    }
 
     printf("demo leave \n");
 
