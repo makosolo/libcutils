@@ -46,6 +46,7 @@ set(SRC_DIR
     src/platform/posix/utils_queue.c
     src/platform/posix/utils_file.c
     src/platform/posix/utils_log.c
+    src/platform/posix/utils_time.c
     src/utils/utils_counter.c
     src/utils/utils_bitops.c
     src/utils/utils_timer.c
