@@ -24,6 +24,7 @@ extern void test_array(void);
 extern void test_heap(void);
 extern void test_bitops(void);
 extern void test_timer(void);
+extern void test_task_pool(void);
 
 typedef struct
 {
@@ -82,6 +83,7 @@ int main(int argc, const char *argv[])
     case 12: test_heap(); break;
     case 13: test_bitops(); break;
     case 14: test_timer(); break;
+    case 15: test_task_pool(); break;
     default: break;
     }
 

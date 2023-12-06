@@ -40,6 +40,7 @@ set(SRC_DIR
     test_heap.c
     test_string.c
     test_task.c
+    test_task_pool.c
     test_mutex.c
     test_event.c
     test_queue.c

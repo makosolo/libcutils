@@ -41,6 +41,7 @@ set(SRC_DIR
     src/container/utils_heap.c
     src/string/utils_string.c
     src/platform/posix/utils_task.c
+    src/platform/posix/utils_task_pool.c
     src/platform/posix/utils_mutex.c
     src/platform/posix/utils_event.c
     src/platform/posix/utils_queue.c
