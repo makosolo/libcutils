@@ -88,6 +88,8 @@ static uint32_t cycbuf_read(util_cycbuf_t* cycbuf, void* buf, uint32_t len, bool
             cycbuf->r_pos = cycbuf->w_pos = -1;
         }
     }
+
+    return 0;
 }
 
 int util_cycbuf_create(util_cycbuf_t* cycbuf, uint32_t max_size, uintptr_t *buf_memory)

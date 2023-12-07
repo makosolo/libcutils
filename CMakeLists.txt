@@ -13,6 +13,9 @@ message(STATUS "GIT_REPOSITORY_VERSION ${GIT_REPO_VERSION}")
 
 set(CMAKE_CXX_STANDARD 11)
 
+add_compile_options(-fPIC -fstack-protector-strong)
+add_compile_options(-Wall -fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -fexceptions)
+
 if(${PLATFORM} STREQUAL "linux")
     SET(CMAKE_C_COMPILER "gcc")
     SET(CMAKE_CXX_COMPILER "g++")

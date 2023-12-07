@@ -79,8 +79,6 @@ int util_cycqueue_put(util_cycqueue_t *queue, uintptr_t data)
 
 int util_cycqueue_pop(util_cycqueue_t *queue, uintptr_t *data)
 {
-    int status = 0;
-
     if(NULL == queue || NULL == data) {
         return -1;
     }
