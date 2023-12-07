@@ -51,7 +51,7 @@ set(SRC_DIR
     test_bitops.c)
 
 #头文件
-include_directories(../include/utils)
+include_directories(../include/cutils)
 
 #链接库
 link_directories(../out/)

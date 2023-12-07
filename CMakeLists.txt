@@ -57,11 +57,11 @@ set(SRC_DIR
 include_directories(
                     .
                     src
-                    include/utils
-                    include/utils/container
-                    include/utils/string
-                    include/utils/utils
-                    include/utils/platform
+                    include/cutils
+                    include/cutils/container
+                    include/cutils/string
+                    include/cutils/utils
+                    include/cutils/platform
                     )
 
 #宏定义

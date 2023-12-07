@@ -56,7 +56,7 @@ if [ $? -ne 0 ];then
 	exit -1
 fi
 
-cp -rf libcutils.so libcutils.so.$VERSION
+# cp -rf libcutils.so libcutils.so.$VERSION
 cd -
 
 cd example/out
