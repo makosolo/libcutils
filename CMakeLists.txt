@@ -74,7 +74,7 @@ endif()
 #add_compile_options(-Wall -g)
 
 #源文件
-add_library(cutils SHARED ${SRC_DIR})
+add_library(cutils STATIC ${SRC_DIR})
 
 target_link_libraries(cutils
     pthread
