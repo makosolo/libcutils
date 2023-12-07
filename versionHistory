@@ -1,6 +1,9 @@
 Name: libcjson
-Version: 1.0.0
+Version: 1.0.1
 
 changelog:
 2023.4.11  enguo.shan  1.0.0
   - 初次提交
+
+2023.12.7  enguo.shan  1.0.1
+  - 初次发布
