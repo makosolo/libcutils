@@ -51,23 +51,23 @@ rm -rf out/*
 rm -rf example/out/*
 rm -rf out_tda4vh/*
 
-cd out
-cmake -DPLATFORM=linux -DBUILD_MODE=debug ..;make clean;make -j32
-if [ $? -ne 0 ];then
-	show_fail
-	exit -1
-fi
+# cd out
+# cmake -DPLATFORM=linux -DBUILD_MODE=debug ..;make clean;make -j32
+# if [ $? -ne 0 ];then
+# 	show_fail
+# 	exit -1
+# fi
 
-# cp -rf libcutils.so libcutils.so.$VERSION
-cd -
+# # cp -rf libcutils.so libcutils.so.$VERSION
+# cd -
 
-cd example/out
-cmake -DPLATFORM=linux -DBUILD_MODE=debug ..;make clean;make -j32
-if [ $? -ne 0 ];then
-	show_fail
-	exit -1
-fi
-cd -
+# cd example/out
+# cmake -DPLATFORM=linux -DBUILD_MODE=debug ..;make clean;make -j32
+# if [ $? -ne 0 ];then
+# 	show_fail
+# 	exit -1
+# fi
+# cd -
 
 cd out_tda4vh
 cmake -DPLATFORM=tda4vh -DBUILD_MODE=debug ..;make clean;make -j32
