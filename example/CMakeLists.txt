@@ -13,11 +13,15 @@ message(STATUS "GIT_REPOSITORY_VERSION ${GIT_REPO_VERSION}")
 
 set(CMAKE_CXX_STANDARD 11)
 
-if(${PLATFORM} STREQUAL "linux")
+if(${PLATFORM} STREQUAL "x86")
     SET(CMAKE_C_COMPILER "gcc")
     SET(CMAKE_CXX_COMPILER "g++")
 
 elseif(${PLATFORM} STREQUAL "tda4vh")
+    SET(CMAKE_C_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-gcc")
+    SET(CMAKE_CXX_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-g++")
+
+elseif(${PLATFORM} STREQUAL "j5")
     SET(CMAKE_C_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-gcc")
     SET(CMAKE_CXX_COMPILER "/opt/tools/rootfs/TDA4VH/rtos_sdk_j784s4_0802/cgtools/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-g++")
 
@@ -54,7 +58,7 @@ set(SRC_DIR
 include_directories(../include/cutils)
 
 #链接库
-link_directories(../out/)
+link_directories(../out/${PLATFORM})
 
 #宏定义
 add_definitions(-Wno-builtin-macro-redefined -g)
@@ -68,6 +72,7 @@ endif()
 # test
 add_executable(testUtils ${SRC_DIR})
 
-target_link_libraries(testUtils cutils)
+target_link_libraries(testUtils pthread cutils)
 
-add_compile_options(-fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -frtti -fexceptions)
+add_compile_options(-fPIC -fstack-protector-strong)
+add_compile_options(-Wall -fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -fexceptions)
