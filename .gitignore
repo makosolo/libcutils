@@ -1,5 +1,8 @@
-example/out/*
-out/*
 .cache/
-out_tda4vh/*
-example/out_tda4vh/*
+build/.cmake/
+build/CMakeFiles/
+build/Testing/
+build/CMakeCache.txt
+build/build_config.h
+out/
+example/out/
