@@ -56,11 +56,11 @@ if [ $? -ne 0 ];then
 	exit -1
 fi
 
-# sh build.sh x86 debug
-# if [ $? -ne 0 ];then
-# 	show_fail
-# 	exit -1
-# fi
+sh build.sh x86 debug
+if [ $? -ne 0 ];then
+	show_fail
+	exit -1
+fi
 
 show_success
 

@@ -72,7 +72,7 @@ endif()
 # test
 add_executable(testUtils ${SRC_DIR})
 
-target_link_libraries(testUtils pthread cutils)
+target_link_libraries(testUtils cutils pthread)
 
 add_compile_options(-fPIC -fstack-protector-strong)
 add_compile_options(-Wall -fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -fexceptions)

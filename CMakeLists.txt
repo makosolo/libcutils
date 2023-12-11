@@ -15,6 +15,9 @@ set(CMAKE_CXX_STANDARD 11)
 
 include(${PROJECT_SOURCE_DIR}/build/build_link.cmake)
 
+add_compile_options(-fPIC -fstack-protector-strong)
+add_compile_options(-Wall -fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -fexceptions)
+
 set(SRC_DIR
     src/utils_comm.c
     src/container/utils_list.c
@@ -64,6 +67,3 @@ target_link_libraries(cutils
     ${APP_DEPEND_LIBS}
     pthread
 )
-
-add_compile_options(-fPIC -fstack-protector-strong)
-add_compile_options(-Wall -fdata-sections -Wno-psabi -ffunction-sections -fstack-protector-all -fexceptions)
