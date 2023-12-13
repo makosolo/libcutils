@@ -17,9 +17,9 @@ void test_map(void)
 
         UTIL_ASSERT_RET(util_map_create_str(&map, 0, 0), "util_map_init_str fail!");
 
-        UTIL_ASSERT_RET(0 == util_map_put_str(&map, "jack", "chicago"), "util_map_put_str fail!");
-        UTIL_ASSERT_RET(0 == util_map_put_str(&map, "jane", "new york"), "util_map_put_str fail!");
-        UTIL_ASSERT_RET(0 == util_map_put_str(&map, "janie", "atlanta"), "util_map_put_str fail!");
+        UTIL_ASSERT_RET(0 != util_map_put_str(&map, "jack", "chicago"), "util_map_put_str fail!");
+        UTIL_ASSERT_RET(0 != util_map_put_str(&map, "jane", "new york"), "util_map_put_str fail!");
+        UTIL_ASSERT_RET(0 != util_map_put_str(&map, "janie", "atlanta"), "util_map_put_str fail!");
 
         util_map_foreach (&map, key, value) {
             printf("Key:[%s], Value:[%s] \n", key, value);
@@ -35,9 +35,12 @@ void test_map(void)
 
         UTIL_ASSERT_RET(util_map_create_64s(&map, 0, 0), "util_map_init_str fail!");
 
-        UTIL_ASSERT_RET(0 == util_map_put_64s(&map, 100, "chicago"), "util_map_put_64s fail!");
-        UTIL_ASSERT_RET(0 == util_map_put_64s(&map, 200, "new york"), "util_map_put_64s fail!");
-        UTIL_ASSERT_RET(0 == util_map_put_64s(&map, 300, "atlanta"), "util_map_put_64s fail!");
+        printf("util_map_put_64s=%s \n", util_map_put_64s(&map, 100, "chicago"));
+        printf("util_map_put_64s=%s \n", util_map_put_64s(&map, 100, "chicag"));
+
+        // UTIL_ASSERT_RET(0 == util_map_put_64s(&map, 100, "chicago"), "util_map_put_64s fail!");
+        UTIL_ASSERT_RET(0 != util_map_put_64s(&map, 200, "new york"), "util_map_put_64s fail!");
+        UTIL_ASSERT_RET(0 != util_map_put_64s(&map, 300, "atlanta"), "util_map_put_64s fail!");
 
         util_map_foreach_key(&map, key) {
             printf("Key:[%d] \n", key);

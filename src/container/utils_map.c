@@ -183,7 +183,7 @@
                                                                                	\
 	V util_map_put_##name(struct util_map_##name *m, K key, V value)           	\
 	{                                                                      		\
-		V ret;                                                         			\
+		/*V ret;*/                                                         			\
 		uint32_t pos, mod, h;                                          			\
                                                                                	\
 		m->oom = false;                                                			\
@@ -194,13 +194,13 @@
 		}                                                              			\
                                                                                	\
 		if (key == 0) {                                                			\
-			ret = (m->used) ? m->mem[-1].value : 0;                				\
+			/*ret = (m->used) ? m->mem[-1].value : 0;*/                				\
 			m->found = m->used;                                    				\
 			m->size += !m->used;                                   				\
 			m->used = true;                                        				\
 			m->mem[-1].value = value;                              				\
                                                                                	\
-			return ret;                                            				\
+			return value;                                            				\
 		}                                                              			\
                                                                                	\
 		mod = m->cap - 1;                                              			\
@@ -216,10 +216,10 @@
 			}                                                      				\
                                                                                	\
 			m->found = m->mem[pos].key != 0;                       				\
-			ret = m->found ? m->mem[pos].value : 0;                				\
+			/*ret = m->found ? m->mem[pos].value : 0;*/                				\
 			util_map_assign_##name(&m->mem[pos], key, value, h);     			\
                                                                                	\
-			return ret;                                            				\
+			return m->mem[pos].value;                                           \
 		}                                                              			\
 	}                                                                      		\
                                                                                	\
