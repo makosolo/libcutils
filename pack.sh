@@ -33,11 +33,11 @@ case $1 in
             exit -1
         fi
         workspace=$2
-        if [ -d ${workspace}/repository/ ];then
-            cp -r repository/* ${workspace}/repository/
+        if [ -d ${workspace}/sdk/ ];then
+            cp -r sdk/* ${workspace}/sdk/
         else 
-           echo "repository dir is not exit"
-           exit 1
+           echo "sdk dir is not exit"
+           exit 2
         fi
 		;;
 	*)
